@@ -118,22 +118,28 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="фон" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фон.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="фон2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фон2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ежик" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ежик.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="крош" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\крош.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="заставка" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\заставка.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="фон3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\фон3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="заставка" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\заставка.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="крош1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\крош1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="фон2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\фон2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="фон" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\фон.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="бараш" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\бараш.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

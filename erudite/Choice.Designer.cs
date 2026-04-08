@@ -80,6 +80,7 @@
             btnNext.TabIndex = 3;
             btnNext.Text = ">";
             btnNext.UseVisualStyleBackColor = false;
+            btnNext.Click += btnNext_Click;
             // 
             // btnPrev
             // 
@@ -91,10 +92,10 @@
             btnPrev.TabIndex = 4;
             btnPrev.Text = "<";
             btnPrev.UseVisualStyleBackColor = false;
+            btnPrev.Click += btnPrev_Click;
             // 
             // pictureBox1
             // 
-            pictureBox1.Image = Properties.Resources.крош1;
             pictureBox1.Location = new Point(120, 173);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(289, 403);
