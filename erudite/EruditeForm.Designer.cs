@@ -57,6 +57,7 @@
             btnExit.TabIndex = 0;
             btnExit.Text = "закрыть";
             btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
             // 
             // btnComplete
             // 
