@@ -55,6 +55,7 @@
             btnAboutGame.TabIndex = 1;
             btnAboutGame.Text = "об игре";
             btnAboutGame.UseVisualStyleBackColor = false;
+            btnAboutGame.Click += btnAboutGame_Click;
             // 
             // btnStart
             // 
@@ -66,7 +67,7 @@
             btnStart.TabIndex = 2;
             btnStart.Text = "старт";
             btnStart.UseVisualStyleBackColor = false;
-            btnStart.Click += this.btnStart_Click;
+            btnStart.Click += btnStart_Click;
             // 
             // InitialForm
             // 
