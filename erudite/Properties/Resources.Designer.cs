@@ -83,6 +83,16 @@ namespace erudite.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap крош1 {
+            get {
+                object obj = ResourceManager.GetObject("крош1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap фон {
             get {
                 object obj = ResourceManager.GetObject("фон", resourceCulture);
