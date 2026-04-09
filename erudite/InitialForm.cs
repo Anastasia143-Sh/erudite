@@ -12,18 +12,23 @@ namespace erudite
         }
         private void btnStart_Click(object sender, EventArgs e)
         {
-            // Шаг 1: Ввод количества игроков
-            string playerCountInput = Microsoft.VisualBasic.Interaction.InputBox(
-                "Введите количество игроков (2-4):", "Настройка игры", "2");
+            int playerCount = 0;
+            bool validInput = false;
 
-            if (string.IsNullOrEmpty(playerCountInput))
-                return;
-
-            if (!int.TryParse(playerCountInput, out int playerCount) || playerCount < 1 || playerCount > 10)
+            while (!validInput)
             {
-                MessageBox.Show("Введите корректное число игроков (от 2 до 4)", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                string playerCountInput = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Введите количество игроков (2-4):", "Настройка игры", "2");
+
+                if (!int.TryParse(playerCountInput, out playerCount) || playerCount < 2 || playerCount > 4 || string.IsNullOrEmpty(playerCountInput))
+                {
+                    MessageBox.Show("Введите корректное число игроков (от 2 до 4)", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    validInput = true;
+                }
             }
 
             List<string> playerNames = new List<string>();
@@ -34,10 +39,21 @@ namespace erudite
 
                 if (string.IsNullOrEmpty(playerName))
                 {
-                    MessageBox.Show($"Имя игрока {i + 1} не может быть пустым!", "Ошибка",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    i--; // Повторяем итерацию для этого игрока
-                    continue;
+                    DialogResult result = MessageBox.Show(
+                        $"Вы хотите отменить создание игры?",
+                        "Отмена ввода",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        i--;
+                        continue;
+                    }
                 }
                 playerNames.Add(playerName);
             }
@@ -46,6 +62,7 @@ namespace erudite
             newForm.Show();
             this.Hide();
         }
+
 
         private void btnAboutGame_Click(object sender, EventArgs e)
         {
