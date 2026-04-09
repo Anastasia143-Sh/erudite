@@ -19,6 +19,10 @@ namespace erudite
         private List<Player> _players = new List<Player>();
         private PictureBox[,] boardCells = new PictureBox[15, 15];
         private const int CELL_SIZE = 40;
+        private Tile _selectedTile; // Выбранная фишка
+        private Button _selectedTileButton; // Кнопка с выбранной фишкой
+        private (int row, int col)? _targetCell; // Целевая клетка (если выбрана)
+
 
         public EruditeForm(InitialForm previousForm, List<Player> players)
         {
@@ -92,7 +96,7 @@ namespace erudite
                     boardPanel.Controls.Add(cell);
                 }
             }
-            boardPanel.BackgroundImage = Properties.Resources.поле; 
+            boardPanel.BackgroundImage = Properties.Resources.поле;
             boardPanel.BackgroundImageLayout = ImageLayout.Stretch;
 
         }
@@ -112,18 +116,72 @@ namespace erudite
 
         private void BoardCell_Click(object sender, EventArgs e)
         {
-            // Логика обработки клика по клетке поля
             Button clickedCell = (Button)sender;
             var (row, col) = ((int, int))clickedCell.Tag;
 
-            // Пример действий:
-            MessageBox.Show($"Клик по клетке: {row+1}, {col+1}");
-            // Здесь можно добавить логику:
-            // - размещение фишки на этой клетке;
-            // - выделение клетки;
-            // - проверка возможности размещения фишки;
-            // - отображение информации о клетке (премиальная зона и т. д.).
+            // Если фишка не выбрана, просто показываем информацию о клетке
+            if (_selectedTile == null)
+            {
+                MessageBox.Show($"Клик по клетке: {row + 1}, {col + 1}");
+                return;
+            }
+
+            // Сохраняем целевую клетку
+            _targetCell = (row, col);
+
+            // Пытаемся разместить фишку
+            bool success = gameController.GetBoard().PlaceTile(_selectedTile, row, col);
+
+            if (success)
+            {
+                // Удаляем фишку из руки игрока
+                var currentPlayer = gameController.GetCurrentPlayer();
+                currentPlayer.Hand.Remove(_selectedTile);
+
+                // Обновляем интерфейс
+                UpdateBoardVisuals();
+                InitializePlayerHand(); // Обновляем руку игрока
+
+                // Сбрасываем выделение
+                _selectedTile = null;
+                if (_selectedTileButton != null)
+                {
+                    _selectedTileButton.BackColor = SystemColors.Control;
+                    _selectedTileButton = null;
+                }
+                _targetCell = null;
+
+                // Показываем, что фишка размещена
+                //clickedCell.Text = _selectedTile.Letter.ToString();
+                //clickedCell.Enabled = false; // Блокируем клетку, чтобы нельзя было переставить
+            }
+            else
+            {
+                MessageBox.Show("Не удалось разместить фишку на этой клетке!\nВозможно, клетка занята или ход невалиден.");
+            }
         }
+
+        private void UpdateBoardVisuals()
+        {
+            foreach (Control control in boardPanel.Controls)
+            {
+                if (control is Button cell && cell.Tag is (int row, int col))
+                {
+                    var tile = gameController.GetBoard().GetTile(row, col);
+                    if (tile != null)
+                    {
+                        cell.Text = tile.Letter.ToString();
+                        cell.Enabled = false;
+                    }
+                    else
+                    {
+                        cell.Text = "";
+                        cell.Enabled = true;
+                    }
+                }
+            }
+        }
+
 
         private void InitializePlayerHand() // очищает панель руки, создаёт кнопки для фишек текущего игрока
         {
@@ -153,17 +211,27 @@ namespace erudite
 
         private void TileButton_Click(object sender, EventArgs e)
         {
-            // Логика обработки клика по фишке
             Button clickedButton = (Button)sender;
             Tile tile = (Tile)clickedButton.Tag;
 
-            // Пример действий:
-            MessageBox.Show($"Выбрана фишка: {tile.Letter}");
-            // Здесь можно добавить логику:
-            // - выделение фишки;
-            // - перемещение на игровое поле;
-            // - обмен фишки и т. д.
+            // Если та же фишка уже выбрана — снимаем выделение
+            if (_selectedTile == tile)
+            {
+                _selectedTile = null;
+                _selectedTileButton = null;
+                clickedButton.BackColor = SystemColors.Control; // Сбрасываем цвет
+                return;
+            }
+
+            // Выделяем новую фишку
+            _selectedTile = tile;
+            _selectedTileButton = clickedButton;
+            clickedButton.BackColor = Color.LightBlue; // Визуальное выделение
+
+            // Сбрасываем выбор клетки — игрок может выбрать новую
+            _targetCell = null;
         }
+
 
         private void UpdatePlayerLabels() // обновляет аватар и имя текущего игрока
         {

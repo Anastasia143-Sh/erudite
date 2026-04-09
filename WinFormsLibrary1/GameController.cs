@@ -29,7 +29,7 @@ namespace ClassLibrary
             InitializePlayers();
         }
 
-        private void InitializePlayers()
+        private void InitializePlayers() // раздает по 7 фишек из мешка и запускает первый ход
         {
             foreach (var player in players)
             {
@@ -38,7 +38,7 @@ namespace ClassLibrary
             StartNextTurn();
         }
 
-        public void EndTurn(List<(int row, int col, Tile tile)> placedTiles)
+        public void EndTurn(List<(int row, int col, Tile tile)> placedTiles) // завершает ход игрока
         {
             var currentPlayer = GetCurrentPlayer();
 
@@ -63,7 +63,7 @@ namespace ClassLibrary
             }
         }
 
-        private void ReturnTilesToPlayer(List<(int row, int col, Tile tile)> tiles, Player player)
+        private void ReturnTilesToPlayer(List<(int row, int col, Tile tile)> tiles, Player player) // возвращает фишки на руку игрока, если ход невалиден
         {
             foreach (var (row, col, tile) in tiles)
             {
@@ -72,19 +72,19 @@ namespace ClassLibrary
             }
         }
 
-        private void StartWordValidation(List<string> words, int score)
+        private void StartWordValidation(List<string> words, int score) // проверка слов
         {
-            OnWordValidationStarted?.Invoke(words, score);
+            OnWordValidationStarted?.Invoke(words, score); 
 
             // В реальном приложении здесь будет ожидание голосования игроков
             // Для примера сразу принимаем слова
             CompleteTurn(words, score);
         }
 
-        private void CompleteTurn(List<string> words, int score)
+        private void CompleteTurn(List<string> words, int score) 
         {
             var currentPlayer = GetCurrentPlayer();
-            currentPlayer.AddScore(score);
+            currentPlayer.AddScore(score); // добавляет очки игроку
             OnPlayerScored?.Invoke(currentPlayer, score);
 
             // Обновляем руку игрока
@@ -94,7 +94,7 @@ namespace ClassLibrary
             NextPlayer();
         }
 
-        private void RefillPlayerHand(Player player)
+        private void RefillPlayerHand(Player player) // дополняет руку игрока до 7 фишек из мешка, если есть фишки
         {
             int tilesNeeded = 7 - player.Hand.Count;
             if (tilesNeeded > 0 && bag.RemainingCount > 0)
@@ -104,12 +104,12 @@ namespace ClassLibrary
             }
         }
 
-        public void NextPlayer()
+        public void NextPlayer() // переходит к следующему активному игроку
         {
             do
             {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-            } while (players[currentPlayerIndex].HasResigned);
+            } while (players[currentPlayerIndex].HasResigned); // пропускает сдавшихся игроков
 
             if (IsGameOver())
             {
@@ -121,16 +121,16 @@ namespace ClassLibrary
             }
         }
 
-        private void StartNextTurn()
+        private void StartNextTurn() // уведомляет о начале хода текущего игрока через событие
         {
             var currentPlayer = GetCurrentPlayer();
             OnPlayerTurnStarted?.Invoke(currentPlayer);
         }
 
-        public void ResignPlayer(Player player)
+        public void ResignPlayer(Player player) // обрабатывает сдачу игрока
         {
-            player.Resign();
-            finalScores[player] = player.Score;
+            player.Resign(); // отмечает как сдавшегося
+            finalScores[player] = player.Score; // сохраняет его финальный счет
             OnPlayerResigned?.Invoke(player);
 
             if (IsGameOver())
@@ -139,7 +139,7 @@ namespace ClassLibrary
             }
         }
 
-        private bool IsGameOver()
+        private bool IsGameOver() // проверка на окончание игры
         {
             var activePlayers = players.Where(p => !p.HasResigned).ToList();
 
@@ -151,7 +151,7 @@ namespace ClassLibrary
             return activePlayers.Count < 2;
         }
 
-        private void EndGame()
+        private void EndGame() // завершение игры
         {
             isGameActive = false;
 
@@ -162,7 +162,7 @@ namespace ClassLibrary
                     finalScores[player] = player.Score;
             }
 
-            var winner = players
+            var winner = players // определяет победителя
                 .Where(p => !p.HasResigned)
                 .OrderByDescending(p => p.Score)
                 .FirstOrDefault();
@@ -170,7 +170,7 @@ namespace ClassLibrary
             OnGameEnded?.Invoke(winner);
         }
 
-        public Player GetCurrentPlayer() => players[currentPlayerIndex];
+        public Player GetCurrentPlayer() => players[currentPlayerIndex]; 
 
         public GameBoard GetBoard() => board;
 

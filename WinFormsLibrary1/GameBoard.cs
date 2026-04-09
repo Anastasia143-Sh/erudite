@@ -32,7 +32,9 @@ namespace ClassLibrary
                 (0, 3), (0, 11), (2, 6), (2, 8),
                 (3, 0), (3, 7), (3, 13), (6, 2),
                 (6, 6), (6, 8), (6, 12), (7, 3),
-                (7, 11), (8, 12), (13, 1), (13, 13) // дописать
+                (7, 11), (8, 2), (8, 6), (8, 8),
+                (8, 12), (11, 0), (11, 7), (11, 13),
+                (12, 6), (12, 8), (14, 3), (14, 11)
             };
 
             foreach (var (row, col) in doubleLetterPositions)
@@ -53,7 +55,7 @@ namespace ClassLibrary
             {
                 (1, 1), (2, 2), (3, 3), (4, 4),
                 (13, 1), (12, 2), (11, 3), (10, 4),
-                (1, 13), (2, 12), (3, 11), (4, ),
+                (1, 13), (2, 12), (3, 11), (4, 10),
                 (13, 13), (12, 12), (11, 11), (10, 10)
             };
 
@@ -63,7 +65,7 @@ namespace ClassLibrary
             // Тройные слова
             var tripleWordPositions = new List<(int, int)>
             {
-                (0, 0), (0, 14), (15, 0), (14, 14),
+                (0, 0), (0, 14), (14, 0), (14, 14),
                 (0, 7), (7, 0), (14, 7), (7, 14)
             };
 
@@ -71,16 +73,16 @@ namespace ClassLibrary
                 IsTripleWord[row, col] = true;
         }
 
-        public bool PlaceTile(Tile tile, int row, int col)
+        public bool PlaceTile(Tile tile, int row, int col) // размещает фишку на поле
         {
-            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] != null)
+            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] != null) // проверяет границы и занятость клетки
                 return false;
 
             grid[row, col] = tile;
             return true;
         }
 
-        public bool RemoveTile(int row, int col)
+        public bool RemoveTile(int row, int col) // удаляет фишку с поля
         {
             if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] == null)
                 return false;
@@ -89,14 +91,14 @@ namespace ClassLibrary
             return true;
         }
 
-        public Tile GetTile(int row, int col) => grid[row, col];
+        public Tile GetTile(int row, int col) => grid[row, col]; // возвращает фишку в указанной клетке 
 
-        public bool IsCellOccupied(int row, int col)
+        public bool IsCellOccupied(int row, int col) // проверяет, занята ли клетка фишкой
         {
             return row >= 0 && row < Size && col >= 0 && col < Size && grid[row, col] != null;
         }
 
-        public List<(int row, int col)> GetAdjacentTiles(int row, int col)
+        public List<(int row, int col)> GetAdjacentTiles(int row, int col) //возвращает список соседних занятых клеток
         {
             var adjacent = new List<(int, int)>();
             int[] dr = { -1, 1, 0, 0 };
@@ -114,7 +116,7 @@ namespace ClassLibrary
             return adjacent;
         }
 
-        public (List<string> words, int totalScore) CalculateTurnScore(List<(int row, int col, Tile tile)> placedTiles)
+        public (List<string> words, int totalScore) CalculateTurnScore(List<(int row, int col, Tile tile)> placedTiles) // главный метод подсчёта очков за ход
         {
             var words = new List<string>();
             int totalScore = 0;
@@ -144,7 +146,7 @@ namespace ClassLibrary
             return (words, totalScore);
         }
 
-        private string GetWordAtPosition(int startRow, int startCol, int rowStep, int colStep)
+        private string GetWordAtPosition(int startRow, int startCol, int rowStep, int colStep) // находит полное слово, проходя от начальной клетки в заданном направлении 
         {
             var word = new StringBuilder();
 
@@ -169,7 +171,7 @@ namespace ClassLibrary
             return word.Length > 1 ? word.ToString() : string.Empty;
         }
 
-        private int CalculateWordScoreWithMultipliers(string word, int startRow, int startCol, int rowStep, int colStep, ref bool wordMultiplierApplied)
+        private int CalculateWordScoreWithMultipliers(string word, int startRow, int startCol, int rowStep, int colStep, ref bool wordMultiplierApplied) // рассчитывает очки для слова: суммирует очки букв с множителями букв, применяет множитель слова
         {
             int baseScore = 0;
             int wordMultiplier = 1;
@@ -211,7 +213,7 @@ namespace ClassLibrary
             return baseScore * wordMultiplier;
         }
 
-        public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles)
+        public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles) // проверяет, корректен ли ход
         {
             if (placedTiles.Count == 0) return false;
 
@@ -232,7 +234,7 @@ namespace ClassLibrary
             return AreWordsValid(words);
         }
 
-        private bool AreTilesConnected(List<(int row, int col, Tile tile)> placedTiles)
+        private bool AreTilesConnected(List<(int row, int col, Tile tile)> placedTiles) // проверяет, что фишки размещены в одной линии и подряд.
         {
             // Простая проверка: все фишки должны быть в одной линии (горизонтальной или вертикальной)
             bool sameRow = placedTiles.All(t => t.row == placedTiles[0].row);
@@ -256,7 +258,7 @@ namespace ClassLibrary
             return true;
         }
 
-        private bool ConnectsToExistingTiles(List<(int row, int col, Tile tile)> placedTiles)
+        private bool ConnectsToExistingTiles(List<(int row, int col, Tile tile)> placedTiles) // проверяет, что хотя бы одна фишка касается уже существующих на поле
         {
             foreach (var (row, col, _) in placedTiles)
             {
@@ -269,7 +271,7 @@ namespace ClassLibrary
             return false;
         }
 
-        private int GetAllTilesCount()
+        private int GetAllTilesCount() // подсчитывает общее количество фишек на поле
         {
             int count = 0;
             for (int r = 0; r < Size; r++)
@@ -278,21 +280,21 @@ namespace ClassLibrary
             return count;
         }
 
-        private bool AreWordsValid(List<string> words)
+        private bool AreWordsValid(List<string> words) // проверяет слова на валидность
         {
             // Здесь должна быть интеграция со словарём
             // Для примера — простая проверка длины
             return words.All(word => word.Length >= 2);
         }
 
-        public void ClearBoard()
+        public void ClearBoard() // очищает доску
         {
             for (int r = 0; r < Size; r++)
                 for (int c = 0; c < Size; c++)
                     grid[r, c] = null;
         }
 
-        public List<(int row, int col)> GetEmptyCellsAround(int row, int col)
+        public List<(int row, int col)> GetEmptyCellsAround(int row, int col) // возвращает список пустых клеток вокруг заданной
         {
             var emptyCells = new List<(int, int)>();
             int[] dr = { -1, 1, 0, 0 };
@@ -310,7 +312,7 @@ namespace ClassLibrary
             return emptyCells;
         }
 
-        public string[,] GetBoardState()
+        public string[,] GetBoardState() // возвращает текущее состояние поля в виде двумерного массива строк
         {
             var state = new string[Size, Size];
             for (int r = 0; r < Size; r++)
@@ -323,7 +325,7 @@ namespace ClassLibrary
             return state;
         }
 
-        public bool IsBoardEmpty()
+        public bool IsBoardEmpty() // проверяет, пуста ли доска
         {
             return GetAllTilesCount() == 0;
         }
