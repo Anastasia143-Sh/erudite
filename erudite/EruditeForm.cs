@@ -14,9 +14,9 @@ namespace erudite
     public partial class EruditeForm : Form
     {
         private GameController gameController;
+        private BagOfTiles _bagOfTiles;
         private InitialForm _previousForm;
         private List<Player> _players = new List<Player>();
-        private int playerIndex;
         private PictureBox[,] boardCells = new PictureBox[15, 15];
         private const int CELL_SIZE = 40;
 
@@ -25,7 +25,6 @@ namespace erudite
             InitializeComponent();
             _previousForm = previousForm;
             _players = players;
-            playerIndex = 0;
             this.Load += EruditeForm_Load;
         }
 
@@ -39,10 +38,12 @@ namespace erudite
                 gameController.OnPlayerScored += OnPlayerScored;
                 gameController.OnWordValidationStarted += ShowWordValidationDialog;
                 gameController.OnGameEnded += OnGameFinished;
-
+                // визуальные компоненты
                 InitializeBoardVisuals();
                 InitializePlayerHand();
-
+                _bagOfTiles = gameController.GetBag();
+                lblCountChips.Text = $"{_bagOfTiles.RemainingCount}";
+                // обновление игроков и счета
                 UpdatePlayerLabels();
                 UpdateScoreDisplay();
 
@@ -57,31 +58,31 @@ namespace erudite
             }
         }
 
-        private void OnCurrentPlayerChanged(Player player)
+        private void OnCurrentPlayerChanged(Player player) // обновляет интерфейс при смене игрока (аватар, руку)
         {
             UpdatePlayerLabels();
             InitializePlayerHand();
         }
 
-        private void OnPlayerScored(Player player, int score)
+        private void OnPlayerScored(Player player, int score) // показывает сообщение о набранных очках и обновляет счёт
         {
             UpdateScoreDisplay();
             MessageBox.Show($"{player.Name} набрал {score} очков!");
         }
 
-        private void ShowWordValidationDialog(List<string> words, int score)
+        private void ShowWordValidationDialog(List<string> words, int score) // отображает проверяемые слова и очки
         {
             MessageBox.Show($"Проверяемые слова: {string.Join(", ", words)}\nОчки: {score}");
         }
 
-        private void OnGameFinished(Player winner)
+        private void OnGameFinished(Player winner) // показывает победителя, возвращает к главному меню
         {
             MessageBox.Show($"Игра окончена! Победитель: {winner.Name}");
             _previousForm.Show();
             this.Close();
         }
 
-        private void InitializeBoardVisuals()
+        private void InitializeBoardVisuals() // создаёт 225 кнопок (15×15) для клеток поля, добавляет их в boardPanel;
         {
             for (int row = 0; row < 15; row++)
             {
@@ -91,9 +92,12 @@ namespace erudite
                     boardPanel.Controls.Add(cell);
                 }
             }
+            boardPanel.BackgroundImage = Properties.Resources.поле; 
+            boardPanel.BackgroundImageLayout = ImageLayout.Stretch;
+
         }
 
-        private Button CreateBoardCell(int row, int col)
+        private Button CreateBoardCell(int row, int col) // создаёт одну кнопку-клетку с координатами в Tag
         {
             Button button = new Button
             {
@@ -102,11 +106,26 @@ namespace erudite
                 Tag = (row, col),
                 FlatStyle = FlatStyle.Flat
             };
-            //button.Click += BoardCell_Click;
+            button.Click += BoardCell_Click;
             return button;
         }
 
-        private void InitializePlayerHand()
+        private void BoardCell_Click(object sender, EventArgs e)
+        {
+            // Логика обработки клика по клетке поля
+            Button clickedCell = (Button)sender;
+            var (row, col) = ((int, int))clickedCell.Tag;
+
+            // Пример действий:
+            MessageBox.Show($"Клик по клетке: {row+1}, {col+1}");
+            // Здесь можно добавить логику:
+            // - размещение фишки на этой клетке;
+            // - выделение клетки;
+            // - проверка возможности размещения фишки;
+            // - отображение информации о клетке (премиальная зона и т. д.).
+        }
+
+        private void InitializePlayerHand() // очищает панель руки, создаёт кнопки для фишек текущего игрока
         {
             handPanel.Controls.Clear();
             var currentPlayer = gameController.GetCurrentPlayer();
@@ -118,24 +137,38 @@ namespace erudite
             }
         }
 
-        private Button CreateTileButton(Tile tile, int index)
+        private Button CreateTileButton(Tile tile, int index) // создаёт кнопку для одной фишки (буква, стиль)
         {
             Button button = new Button
             {
                 Text = tile.Letter.ToString(),
-                Size = new Size(35, 35),
+                Size = new Size(40, 40),
                 Location = new Point(index * 40, 0),
                 Tag = tile,
                 Font = new Font("Arial", 12, FontStyle.Bold)
             };
-            //button.Click += TileButton_Click;
+            button.Click += TileButton_Click;
             return button;
         }
 
-        private void UpdatePlayerLabels()
+        private void TileButton_Click(object sender, EventArgs e)
+        {
+            // Логика обработки клика по фишке
+            Button clickedButton = (Button)sender;
+            Tile tile = (Tile)clickedButton.Tag;
+
+            // Пример действий:
+            MessageBox.Show($"Выбрана фишка: {tile.Letter}");
+            // Здесь можно добавить логику:
+            // - выделение фишки;
+            // - перемещение на игровое поле;
+            // - обмен фишки и т. д.
+        }
+
+        private void UpdatePlayerLabels() // обновляет аватар и имя текущего игрока
         {
             // Обновляем аватар текущего игрока
-            switch (_players[playerIndex].ImageIndex)
+            switch (gameController.GetCurrentPlayer().ImageIndex)
             {
                 case 0:
                     pictureBox1.Image = Properties.Resources.крош2;
@@ -167,51 +200,34 @@ namespace erudite
             }
 
             // Обновляем информацию о текущем игроке
-            lblInfo.Text = $"Сейчас ходит: {_players[playerIndex].Name}";
-            lblName.Text = _players[playerIndex].Name;
+            lblInfo.Text = $"Сейчас ходит: {gameController.GetCurrentPlayer().Name}";
+            lblName.Text = gameController.GetCurrentPlayer().Name;
         }
 
-        private void UpdateScoreDisplay()
+        private void UpdateScoreDisplay() // обновляет таблицу счёта для всех игроков 
         {
-            // Скрываем все элементы для игроков, которых нет
-            lblName1Player.Visible = false;
-            lblScores1Player.Visible = false;
-            lblName2Player.Visible = false;
-            lblScores2Player.Visible = false;
-            lblName3Player.Visible = false;
-            lblScores3Player.Visible = false;
-            lblName4Player.Visible = false;
-            lblScores4Player.Visible = false;
-
-            // Показываем и обновляем данные для каждого существующего игрока
-            for (int i = 0; i < _players.Count; i++)
+            var scoreLabels = new[]
             {
-                switch (i)
+                (lblName1Player, lblScores1Player),
+                (lblName2Player, lblScores2Player),
+                (lblName3Player, lblScores3Player),
+                (lblName4Player, lblScores4Player)
+            };
+
+            for (int i = 0; i < scoreLabels.Length; i++)
+            {
+                var (nameLabel, scoreLabel) = scoreLabels[i];
+                if (i < _players.Count)
                 {
-                    case 0:
-                        lblName1Player.Text = _players[i].Name;
-                        lblScores1Player.Text = _players[i].Score.ToString();
-                        lblName1Player.Visible = true;
-                        lblScores1Player.Visible = true;
-                        break;
-                    case 1:
-                        lblName2Player.Text = _players[i].Name;
-                        lblScores2Player.Text = _players[i].Score.ToString();
-                        lblName2Player.Visible = true;
-                        lblScores2Player.Visible = true;
-                        break;
-                    case 2:
-                        lblName3Player.Text = _players[i].Name;
-                        lblScores3Player.Text = _players[i].Score.ToString();
-                        lblName3Player.Visible = true;
-                        lblScores3Player.Visible = true;
-                        break;
-                    case 3:
-                        lblName4Player.Text = _players[i].Name;
-                        lblScores4Player.Text = _players[i].Score.ToString();
-                        lblName4Player.Visible = true;
-                        lblScores4Player.Visible = true;
-                        break;
+                    nameLabel.Text = _players[i].Name;
+                    scoreLabel.Text = _players[i].Score.ToString();
+                    nameLabel.Visible = true;
+                    scoreLabel.Visible = true;
+                }
+                else
+                {
+                    nameLabel.Visible = false;
+                    scoreLabel.Visible = false;
                 }
             }
         }
@@ -219,15 +235,8 @@ namespace erudite
         // Метод для добавления очков текущему игроку
         private void AddScoreToCurrentPlayer(int points)
         {
-            _players[playerIndex].Score += points;
+            gameController.GetCurrentPlayer().Score += points;
             UpdateScoreDisplay(); // Обновляем отображение сразу после изменения
-        }
-
-        // Метод для смены хода
-        private void NextPlayerTurn()
-        {
-            playerIndex = (playerIndex + 1) % _players.Count; // Переход к следующему игроку с циклом
-            UpdatePlayerLabels(); // Обновляем интерфейс
         }
 
         private void btnExit_Click(object sender, EventArgs e)

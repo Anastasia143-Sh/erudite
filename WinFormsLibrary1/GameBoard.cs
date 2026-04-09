@@ -9,11 +9,11 @@ namespace ClassLibrary
     public class GameBoard
     {
         private const int Size = 15;
-        private Tile[,] grid;
-        public bool[,] IsDoubleLetter { get; set; } = new bool[Size, Size];
-        public bool[,] IsTripleLetter { get; set; } = new bool[Size, Size];
-        public bool[,] IsDoubleWord { get; set; } = new bool[Size, Size];
-        public bool[,] IsTripleWord { get; set; } = new bool[Size, Size];
+        private Tile[,] grid; // хранение фишек на поле
+        public bool[,] IsDoubleLetter { get; set; } = new bool[Size, Size]; // х2 за букву
+        public bool[,] IsTripleLetter { get; set; } = new bool[Size, Size]; // х3 за букву
+        public bool[,] IsDoubleWord { get; set; } = new bool[Size, Size]; // х2 за слово
+        public bool[,] IsTripleWord { get; set; } = new bool[Size, Size]; // х3 за слово
 
         public GameBoard()
         {
@@ -21,50 +21,51 @@ namespace ClassLibrary
             InitializePremiumCells();
         }
 
-        private void InitializePremiumCells()
+        private void InitializePremiumCells() // задает расположение премиальных клеток
         {
             // Центр — тройное слово
             IsTripleWord[7, 7] = true;
 
             // Двойные буквы (пример расположения)
             var doubleLetterPositions = new List<(int, int)>
-        {
-            (1, 1), (1, 13), (2, 2), (2, 12),
-            (3, 3), (3, 11), (4, 4), (4, 10),
-            (10, 4), (10, 10), (11, 3), (11, 11),
-            (12, 2), (12, 12), (13, 1), (13, 13)
-        };
+            {
+                (0, 3), (0, 11), (2, 6), (2, 8),
+                (3, 0), (3, 7), (3, 13), (6, 2),
+                (6, 6), (6, 8), (6, 12), (7, 3),
+                (7, 11), (8, 12), (13, 1), (13, 13) // дописать
+            };
 
             foreach (var (row, col) in doubleLetterPositions)
                 IsDoubleLetter[row, col] = true;
 
             // Тройные буквы
             var tripleLetterPositions = new List<(int, int)>
-        {
-            (1, 5), (1, 9), (5, 1), (5, 5),
-            (5, 9), (5, 13), (9, 1), (9, 5),
-            (9, 9), (9, 13), (13, 5), (13, 9)
-        };
+            {
+                (1, 5), (1, 9), (5, 1), (9, 1),
+                (13, 5), (5, 13), (13, 9), (9, 13)
+            };
 
             foreach (var (row, col) in tripleLetterPositions)
                 IsTripleLetter[row, col] = true;
 
             // Двойные слова
             var doubleWordPositions = new List<(int, int)>
-        {
-            (0, 0), (0, 7), (0, 14), (7, 0),
-            (7, 14), (14, 0), (14, 7), (14, 14)
-        };
+            {
+                (1, 1), (2, 2), (3, 3), (4, 4),
+                (13, 1), (12, 2), (11, 3), (10, 4),
+                (1, 13), (2, 12), (3, 11), (4, ),
+                (13, 13), (12, 12), (11, 11), (10, 10)
+            };
 
             foreach (var (row, col) in doubleWordPositions)
                 IsDoubleWord[row, col] = true;
 
             // Тройные слова
             var tripleWordPositions = new List<(int, int)>
-        {
-            (1, 1), (2, 2), (3, 3), (4, 4),
-            (10, 10), (11, 11), (12, 12), (13, 13)
-        };
+            {
+                (0, 0), (0, 14), (15, 0), (14, 14),
+                (0, 7), (7, 0), (14, 7), (7, 14)
+            };
 
             foreach (var (row, col) in tripleWordPositions)
                 IsTripleWord[row, col] = true;

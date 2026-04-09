@@ -119,7 +119,7 @@
             // 
             // handPanel
             // 
-            handPanel.BackColor = Color.GhostWhite;
+            handPanel.BackColor = Color.Transparent;
             handPanel.Location = new Point(73, 895);
             handPanel.Name = "handPanel";
             handPanel.Size = new Size(374, 51);
@@ -226,7 +226,8 @@
             // 
             // boardPanel
             // 
-            boardPanel.BackColor = Color.GhostWhite;
+            boardPanel.BackColor = Color.Transparent;
+            boardPanel.BackgroundImageLayout = ImageLayout.Stretch;
             boardPanel.Location = new Point(40, 262);
             boardPanel.Name = "boardPanel";
             boardPanel.Size = new Size(600, 600);
