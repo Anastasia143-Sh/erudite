@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.DataFormats;
+using ClassLibrary;
 
 namespace erudite
 {
@@ -76,7 +77,7 @@ namespace erudite
             if (_imageIndexes.Contains(imageIndex))
             {
                 MessageBox.Show("Один из игроков уже выбрал этого персонажа.\nПожалуйста, выберите другого", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -92,15 +93,22 @@ namespace erudite
             }
             else
             {
+                // Создаём список игроков на основе выбранных данных
+                List<Player> players = new List<Player>();
+                for (int i = 0; i < _playerCount; i++)
+                {
+                    Player player = new Player(_playerNames[i], _imageIndexes[i]);
+                    players.Add(player);
+                }
                 DialogResult result = MessageBox.Show(
-                    "Все персонажи выбраны!",
-                    "Завершение выбора",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                "Все персонажи выбраны!",
+                "Завершение выбора",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
 
                 if (result == DialogResult.OK)
                 {
-                    EruditeForm newForm = new EruditeForm(_previousForm, _playerNames, _playerCount);
+                    EruditeForm newForm = new EruditeForm(_previousForm, players); // Передаём список игроков
                     newForm.Show();
                     this.Close();
                 }

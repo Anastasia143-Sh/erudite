@@ -45,6 +45,8 @@
             lblScores4Player = new Label();
             lblCountChips = new Label();
             lblCountChipsText = new Label();
+            pictureBox1 = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // btnExit
@@ -209,6 +211,15 @@
             lblCountChipsText.TabIndex = 19;
             lblCountChipsText.Text = "Осталось фишек:";
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Location = new Point(585, 656);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(133, 160);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 20;
+            pictureBox1.TabStop = false;
+            // 
             // EruditeForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -216,6 +227,7 @@
             BackgroundImage = Properties.Resources.фон3;
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(777, 897);
+            Controls.Add(pictureBox1);
             Controls.Add(lblCountChipsText);
             Controls.Add(lblCountChips);
             Controls.Add(lblScores4Player);
@@ -237,6 +249,7 @@
             Name = "EruditeForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Erudite";
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
@@ -261,5 +274,6 @@
         private Label lblCountChipsName;
         private Label lblCountChips;
         private Label lblCountChipsText;
+        private PictureBox pictureBox1;
     }
 }
