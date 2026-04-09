@@ -73,6 +73,16 @@ namespace erudite.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap бараш1 {
+            get {
+                object obj = ResourceManager.GetObject("бараш1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ежик {
             get {
                 object obj = ResourceManager.GetObject("ежик", resourceCulture);
@@ -83,9 +93,39 @@ namespace erudite.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ежик1 {
+            get {
+                object obj = ResourceManager.GetObject("ежик1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap заставка {
             get {
                 object obj = ResourceManager.GetObject("заставка", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap карыч {
+            get {
+                object obj = ResourceManager.GetObject("карыч", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap копатыч {
+            get {
+                object obj = ResourceManager.GetObject("копатыч", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -106,6 +146,56 @@ namespace erudite.Properties {
         internal static System.Drawing.Bitmap крош1 {
             get {
                 object obj = ResourceManager.GetObject("крош1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap крош2 {
+            get {
+                object obj = ResourceManager.GetObject("крош2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap лосяш {
+            get {
+                object obj = ResourceManager.GetObject("лосяш", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap нюша {
+            get {
+                object obj = ResourceManager.GetObject("нюша", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap пин {
+            get {
+                object obj = ResourceManager.GetObject("пин", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap совунья {
+            get {
+                object obj = ResourceManager.GetObject("совунья", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -136,6 +226,16 @@ namespace erudite.Properties {
         internal static System.Drawing.Bitmap фон3 {
             get {
                 object obj = ResourceManager.GetObject("фон3", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap фон4 {
+            get {
+                object obj = ResourceManager.GetObject("фон4", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

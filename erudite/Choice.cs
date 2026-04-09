@@ -54,13 +54,31 @@ namespace erudite
             switch (imageIndex)
             {
                 case 0:
-                    pictureBox1.Image = Properties.Resources.крош1;
+                    pictureBox1.Image = Properties.Resources.крош2;
                     break;
                 case 1:
-                    pictureBox1.Image = Properties.Resources.ежик;
+                    pictureBox1.Image = Properties.Resources.ежик1;
                     break;
                 case 2:
-                    pictureBox1.Image = Properties.Resources.бараш;
+                    pictureBox1.Image = Properties.Resources.бараш1;
+                    break;
+                case 3:
+                    pictureBox1.Image = Properties.Resources.совунья;
+                    break;
+                case 4:
+                    pictureBox1.Image = Properties.Resources.нюша;
+                    break;
+                case 5:
+                    pictureBox1.Image = Properties.Resources.карыч;
+                    break;
+                case 6:
+                    pictureBox1.Image = Properties.Resources.копатыч;
+                    break;
+                case 7:
+                    pictureBox1.Image = Properties.Resources.лосяш;
+                    break;
+                case 8:
+                    pictureBox1.Image = Properties.Resources.пин;
                     break;
             }
         }
@@ -117,13 +135,13 @@ namespace erudite
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            imageIndex = (imageIndex + 1) % 3; // Цикл: 0→1→2→0
+            imageIndex = (imageIndex + 1) % 9; // Цикл: 0→1→2→0
             UpdatePlayerTurnLabel();
         }
 
         private void btnPrev_Click(object sender, EventArgs e)
         {
-            imageIndex = (imageIndex - 1 + 3) % 3; // Цикл: 2→1→0→2
+            imageIndex = (imageIndex - 1 + 9) % 9; // Цикл: 2→1→0→2
             UpdatePlayerTurnLabel();
         }
     }

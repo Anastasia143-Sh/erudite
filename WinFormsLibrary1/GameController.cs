@@ -6,144 +6,229 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary
 {
-    internal class GameController
+    public class GameController
     {
-        private List<Player> _players;
-        private BagOfTiles _bag;
-        private GameBoard _board;
-        private int _currentPlayerIndex = 0;
+        private List<Player> players;
+        private BagOfTiles bag;
+        private GameBoard board;
+        private int currentPlayerIndex = 0;
+        private bool isGameActive = true;
+        private Dictionary<Player, int> finalScores = new Dictionary<Player, int>();
 
-        // Поля для модерации
-        private string _pendingWord;
-        private Player _pendingPlayer;
-        private List<(Player Player, bool? VotedYes)> _votes;
-        private List<(char Letter, int Row, int Col)> _pendingWordData;
+        public event Action<Player> OnPlayerTurnStarted;
+        public event Action<List<string>, int> OnWordValidationStarted;
+        public event Action<Player, int> OnPlayerScored;
+        public event Action<Player> OnPlayerResigned;
+        public event Action<Player> OnGameEnded;
 
         public GameController(List<Player> players)
         {
-            _players = players;
-            _bag = new BagOfTiles();
-            _board = new GameBoard();
+            this.players = players;
+            bag = new BagOfTiles();
+            board = new GameBoard();
             InitializePlayers();
         }
 
         private void InitializePlayers()
         {
-            foreach (var player in _players)
+            foreach (var player in players)
             {
-                player.AddTilesToHand(_bag.DrawTiles(7));
+                player.Hand = bag.DrawTiles(7);
             }
+            StartNextTurn();
         }
 
-        // Метод отправляет слово на модерацию (без проверки по словарю)
-        public bool SubmitWordForModeration(Player player, List<(char Letter, int Row, int Col)> wordData)
+        public void EndTurn(List<(int row, int col, Tile tile)> placedTiles)
         {
-            string word = string.Concat(wordData.Select(w => w.Letter));
+            var currentPlayer = GetCurrentPlayer();
 
-            _pendingWord = word;
-            _pendingPlayer = player;
-            _pendingWordData = wordData;
-            _votes = _players
-                .Where(p => p != player) // исключаем автора слова
-                .Select(p => (p, (bool?)null)) // null — ещё не голосовал
-                .ToList();
-
-            return true; // слово отправлено на модерацию
-        }
-
-        // Метод для голосования
-        public void VoteForWord(Player voter, bool voteYes)
-        {
-            var voteEntry = _votes.FirstOrDefault(v => v.Player == voter);
-            if (voteEntry.Player != null)
+            // Проверяем корректность хода
+            if (!board.IsValidMove(placedTiles))
             {
-                _votes[_votes.IndexOf(voteEntry)] = (voter, voteYes);
+                // Возвращаем фишки игроку
+                ReturnTilesToPlayer(placedTiles, currentPlayer);
+                return;
             }
-        }
 
-        // Завершение модерации — подсчёт голосов
-        public bool CompleteModeration()
-        {
-            if (_votes.Any(v => v.VotedYes == null))
-                throw new InvalidOperationException("Не все игроки проголосовали!");
-
-            int yesVotes = _votes.Count(v => v.VotedYes == true);
-            int noVotes = _votes.Count(v => v.VotedYes == false);
-
-            bool wordAccepted = yesVotes > noVotes;
-
-            if (wordAccepted)
+            // Запускаем модерацию слов
+            if (placedTiles.Count > 0)
             {
-                // Размещаем буквы на поле
-                foreach (var (letter, row, col) in _pendingWordData)
-                {
-                    var tile = _pendingPlayer.Hand.FirstOrDefault(t => t.Letter == letter);
-                    if (tile != null && _board.PlaceTile(tile, row, col))
-                    {
-                        _pendingPlayer.RemoveTileFromHand(tile);
-                    }
-                }
-
-                // Подсчёт очков
-                var positions = _pendingWordData.Select(w => (w.Row, w.Col)).ToList();
-                _pendingPlayer.Score += _board.CalculateScoreForWord(positions);
-
-                // Добор фишек
-                _pendingPlayer.AddTilesToHand(_bag.DrawTiles(_pendingWordData.Count));
+                var (words, score) = board.CalculateTurnScore(placedTiles);
+                StartWordValidation(words, score);
             }
             else
             {
-                // Откат хода: возвращаем фишки в руку игрока
-                // Здесь нужно корректно восстановить фишки — предположим, что у нас есть доступ к их значениям
-                foreach (var (letter, _, _) in _pendingWordData)
-                {
-                    // Для восстановления фишки нужно знать её стоимость — в текущей модели она не хранится в _pendingWordData
-                    // Возможное решение: хранить полный объект Tile вместо (char, int, int)
-                    // Пока используем заглушку — на практике нужно доработать структуру данных
-                    //_pendingPlayer.AddTileToHand(new Tile(letter, 0)); // 0 — временное значение
-                }
+                // Если игрок ничего не поставил, просто переходим к следующему ходу
+                NextPlayer();
             }
-
-            // Очищаем данные модерации
-            _pendingWord = null;
-            _pendingPlayer = null;
-            _pendingWordData = null;
-            _votes = null;
-
-            NextTurn();
-            return wordAccepted;
         }
 
-        public bool IsModerationActive => _pendingWord != null;
-
-        public string GetPendingWord() => _pendingWord;
-        public Player GetPendingPlayer() => _pendingPlayer;
-        public List<(Player, bool?)> GetVotes() => _votes;
-
-        public void NextTurn()
+        private void ReturnTilesToPlayer(List<(int row, int col, Tile tile)> tiles, Player player)
         {
-            _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
-        }
-
-        public Player GetCurrentPlayer() => _players[_currentPlayerIndex];
-
-        public bool IsGameOver()
-        {
-            return _bag.RemainingTilesCount == 0 && _players.Any(p => p.Hand.Count == 0);
-        }
-
-        public Player GetWinner()
-        {
-            return _players.OrderByDescending(p => p.Score).First();
-        }
-
-        public void Surrender(Player player)
-        {
-            _players.Remove(player);
-            if (_players.Count == 1)
+            foreach (var (row, col, tile) in tiles)
             {
-                // Последний оставшийся игрок — победитель
+                board.RemoveTile(row, col);
+                player.Hand.Add(tile);
             }
+        }
+
+        private void StartWordValidation(List<string> words, int score)
+        {
+            OnWordValidationStarted?.Invoke(words, score);
+
+            // В реальном приложении здесь будет ожидание голосования игроков
+            // Для примера сразу принимаем слова
+            CompleteTurn(words, score);
+        }
+
+        private void CompleteTurn(List<string> words, int score)
+        {
+            var currentPlayer = GetCurrentPlayer();
+            currentPlayer.AddScore(score);
+            OnPlayerScored?.Invoke(currentPlayer, score);
+
+            // Обновляем руку игрока
+            RefillPlayerHand(currentPlayer);
+
+            // Переходим к следующему игроку
+            NextPlayer();
+        }
+
+        private void RefillPlayerHand(Player player)
+        {
+            int tilesNeeded = 7 - player.Hand.Count;
+            if (tilesNeeded > 0 && bag.RemainingCount > 0)
+            {
+                var newTiles = bag.DrawTiles(tilesNeeded);
+                player.Hand.AddRange(newTiles);
+            }
+        }
+
+        public void NextPlayer()
+        {
+            do
+            {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+            } while (players[currentPlayerIndex].HasResigned);
+
+            if (IsGameOver())
+            {
+                EndGame();
+            }
+            else
+            {
+                StartNextTurn();
+            }
+        }
+
+        private void StartNextTurn()
+        {
+            var currentPlayer = GetCurrentPlayer();
+            OnPlayerTurnStarted?.Invoke(currentPlayer);
+        }
+
+        public void ResignPlayer(Player player)
+        {
+            player.Resign();
+            finalScores[player] = player.Score;
+            OnPlayerResigned?.Invoke(player);
+
+            if (IsGameOver())
+            {
+                EndGame();
+            }
+        }
+
+        private bool IsGameOver()
+        {
+            var activePlayers = players.Where(p => !p.HasResigned).ToList();
+
+            // Если осталось 2 игрока и один сдался — второй выигрывает
+            if (players.Count == 2 && activePlayers.Count == 1)
+                return true;
+
+            // Если осталось меньше 2 активных игроков
+            return activePlayers.Count < 2;
+        }
+
+        private void EndGame()
+        {
+            isGameActive = false;
+
+            // Собираем финальные результаты
+            foreach (var player in players)
+            {
+                if (!finalScores.ContainsKey(player))
+                    finalScores[player] = player.Score;
+            }
+
+            var winner = players
+                .Where(p => !p.HasResigned)
+                .OrderByDescending(p => p.Score)
+                .FirstOrDefault();
+
+            OnGameEnded?.Invoke(winner);
+        }
+
+        public Player GetCurrentPlayer() => players[currentPlayerIndex];
+
+        public GameBoard GetBoard() => board;
+
+        public BagOfTiles GetBag() => bag;
+
+        public List<Player> GetPlayers() => players;
+
+        public bool IsActive() => isGameActive;
+
+        public Dictionary<Player, int> GetFinalScores() => finalScores;
+
+        // Метод для обмена фишек
+        public void ExchangeTiles(Player player, List<Tile> tilesToExchange)
+        {
+            if (!isGameActive || player != GetCurrentPlayer()) return;
+
+            // Возвращаем фишки в мешок
+            bag.ReturnTiles(tilesToExchange);
+
+            // Удаляем фишки из руки игрока
+            foreach (var tile in tilesToExchange)
+            {
+                player.Hand.Remove(tile);
+            }
+
+            // Даём новые фишки
+            var newTiles = bag.DrawTiles(tilesToExchange.Count);
+            player.Hand.AddRange(newTiles);
+
+            // Пропускаем ход
+            NextPlayer();
+        }
+
+        // Проверка, может ли игрок обменять фишки (должно быть достаточно фишек в мешке)
+        public bool CanExchangeTiles(int count) => bag.RemainingCount >= count;
+
+        // Получение информации о текущем состоянии игры
+        public GameState GetGameState()
+        {
+            return new GameState
+            {
+                CurrentPlayer = GetCurrentPlayer(),
+                Players = players.ToList(),
+                BoardState = board.GetBoardState(),
+                RemainingTiles = bag.RemainingCount,
+                IsActive = isGameActive
+            };
         }
     }
+
+    // Класс для передачи состояния игры
+    public class GameState
+    {
+        public Player CurrentPlayer { get; set; }
+        public List<Player> Players { get; set; }
+        public string[,] BoardState { get; set; }
+        public int RemainingTiles { get; set; }
+        public bool IsActive { get; set; }
+    }
 }
+

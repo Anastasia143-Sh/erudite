@@ -8,15 +8,14 @@ namespace ClassLibrary
 {
     public class BagOfTiles
     {
-        private List<Tile> _tiles;
+        private List<Tile> tiles;
 
         public BagOfTiles()
         {
-            _tiles = GenerateTiles();
-            ShuffleTiles();
+            tiles = GenerateTiles();
         }
 
-        private List<Tile> GenerateTiles()
+        private List<Tile> GenerateTiles() // создаёт начальный набор фишек
         {
             var tiles = new List<Tile>();
             tiles.AddRange(Enumerable.Repeat(new Tile('А', 1), 8));
@@ -55,24 +54,23 @@ namespace ClassLibrary
             return tiles;
         }
 
-        private void ShuffleTiles()
+        public List<Tile> DrawTiles(int count) //  выдаёт указанное количество фишек
         {
-            var random = new Random();
-            _tiles = _tiles.OrderBy(x => random.Next()).ToList(); // сортировка по случайным значениям
+            var drawn = new List<Tile>();
+            for (int i = 0; i < count && tiles.Count > 0; i++)
+            {
+                var randomIndex = new Random().Next(tiles.Count);
+                drawn.Add(tiles[randomIndex]);
+                tiles.RemoveAt(randomIndex);
+            }
+            return drawn;
         }
 
-        public List<Tile> DrawTiles(int count)
+        public void ReturnTiles(List<Tile> returnedTiles) // возвращает фишки в мешок
         {
-            var drawnTiles = _tiles.Take(count).ToList(); // берет первые фишки
-            _tiles.RemoveRange(0, drawnTiles.Count); // удаляет их из мешка
-            return drawnTiles;
+            tiles.AddRange(returnedTiles);
         }
 
-        public void ReturnTiles(List<Tile> tiles)
-        {
-            _tiles.AddRange(tiles); // добавление переданных фишек в мешок
-            ShuffleTiles();
-        }
-        public int RemainingTilesCount => _tiles.Count;
+        public int RemainingCount => tiles.Count; // свойство, возвращающее количество оставшихся фишек
     }
 }

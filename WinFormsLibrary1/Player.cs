@@ -9,24 +9,26 @@ namespace ClassLibrary
     public class Player
     {
         public string Name { get; set; }
-        public int CharacterImageIndex { get; set; } // путь к изображению персонажа
-        public List<Tile> Hand { get; set; } = new List<Tile>();
+        public int ImageIndex { get; set; }
         public int Score { get; set; } = 0;
+        public List<Tile> Hand { get; set; } = new List<Tile>();
+        public bool HasResigned { get; set; } = false;
 
-        public Player(string name, int characterImageIndex)
+        public Player(string name, int imageIndex)
         {
             Name = name;
-            CharacterImageIndex = characterImageIndex;
+            ImageIndex = imageIndex;
         }
 
-        public void AddTilesToHand(List<Tile> tiles)
+        public void AddScore(int points)
         {
-            Hand.AddRange(tiles);
+            Score += points;
         }
 
-        public void RemoveTileFromHand(Tile tile)
+        public void Resign()
         {
-            Hand.Remove(tile);
+            HasResigned = true;
         }
     }
+
 }
