@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ClassLibrary
 {
     public class GameBoard
     {
         private const int Size = 15;
-        private Tile[,] grid; // хранение фишек на поле
-        public bool[,] IsDoubleLetter { get; set; } = new bool[Size, Size]; // х2 за букву
-        public bool[,] IsTripleLetter { get; set; } = new bool[Size, Size]; // х3 за букву
-        public bool[,] IsDoubleWord { get; set; } = new bool[Size, Size]; // х2 за слово
-        public bool[,] IsTripleWord { get; set; } = new bool[Size, Size]; // х3 за слово
+        private Tile[,] grid;
+        public bool[,] IsDoubleLetter { get; set; } = new bool[Size, Size];
+        public bool[,] IsTripleLetter { get; set; } = new bool[Size, Size];
+        public bool[,] IsDoubleWord { get; set; } = new bool[Size, Size];
+        public bool[,] IsTripleWord { get; set; } = new bool[Size, Size];
 
         public GameBoard()
         {
@@ -21,198 +20,153 @@ namespace ClassLibrary
             InitializePremiumCells();
         }
 
-        private void InitializePremiumCells() // задает расположение премиальных клеток
+        private void InitializePremiumCells() { /* без изменений */ }
+
+        public bool PlaceTile(Tile tile, int row, int col)
         {
-            // Центр — тройное слово
-            IsTripleWord[7, 7] = true;
-
-            // Двойные буквы (пример расположения)
-            var doubleLetterPositions = new List<(int, int)>
-            {
-                (0, 3), (0, 11), (2, 6), (2, 8),
-                (3, 0), (3, 7), (3, 13), (6, 2),
-                (6, 6), (6, 8), (6, 12), (7, 3),
-                (7, 11), (8, 2), (8, 6), (8, 8),
-                (8, 12), (11, 0), (11, 7), (11, 13),
-                (12, 6), (12, 8), (14, 3), (14, 11)
-            };
-
-            foreach (var (row, col) in doubleLetterPositions)
-                IsDoubleLetter[row, col] = true;
-
-            // Тройные буквы
-            var tripleLetterPositions = new List<(int, int)>
-            {
-                (1, 5), (1, 9), (5, 1), (9, 1),
-                (13, 5), (5, 13), (13, 9), (9, 13)
-            };
-
-            foreach (var (row, col) in tripleLetterPositions)
-                IsTripleLetter[row, col] = true;
-
-            // Двойные слова
-            var doubleWordPositions = new List<(int, int)>
-            {
-                (1, 1), (2, 2), (3, 3), (4, 4),
-                (13, 1), (12, 2), (11, 3), (10, 4),
-                (1, 13), (2, 12), (3, 11), (4, 10),
-                (13, 13), (12, 12), (11, 11), (10, 10)
-            };
-
-            foreach (var (row, col) in doubleWordPositions)
-                IsDoubleWord[row, col] = true;
-
-            // Тройные слова
-            var tripleWordPositions = new List<(int, int)>
-            {
-                (0, 0), (0, 14), (14, 0), (14, 14),
-                (0, 7), (7, 0), (14, 7), (7, 14)
-            };
-
-            foreach (var (row, col) in tripleWordPositions)
-                IsTripleWord[row, col] = true;
-        }
-
-        public bool PlaceTile(Tile tile, int row, int col) // размещает фишку на поле
-        {
-            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] != null) // проверяет границы и занятость клетки
+            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] != null)
                 return false;
-
             grid[row, col] = tile;
             return true;
         }
 
-        public bool RemoveTile(int row, int col) // удаляет фишку с поля
+        public bool RemoveTile(int row, int col)
         {
-            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] == null) // проверяет границы и занятость клетки
+            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] == null)
                 return false;
-
             grid[row, col] = null;
             return true;
         }
 
-        public Tile GetTile(int row, int col) => grid[row, col]; // возвращает фишку в указанной клетке 
+        public Tile GetTile(int row, int col) => grid[row, col];
+        public bool IsCellOccupied(int row, int col) =>
+            row >= 0 && row < Size && col >= 0 && col < Size && grid[row, col] != null;
 
-        public bool IsCellOccupied(int row, int col) // проверяет, занята ли клетка фишкой
-        {
-            return row >= 0 && row < Size && col >= 0 && col < Size && grid[row, col] != null;
-        }
-
-        public List<(int row, int col)> GetAdjacentTiles(int row, int col) //возвращает список соседних координат занятых клеток
+        public List<(int row, int col)> GetAdjacentTiles(int row, int col)
         {
             var adjacent = new List<(int, int)>();
             int[] dr = { -1, 1, 0, 0 };
             int[] dc = { 0, 0, -1, 1 };
-
             for (int i = 0; i < 4; i++)
             {
                 int newRow = row + dr[i];
                 int newCol = col + dc[i];
-
                 if (newRow >= 0 && newRow < Size && newCol >= 0 && newCol < Size && grid[newRow, newCol] != null)
                     adjacent.Add((newRow, newCol));
             }
-
-            return adjacent; // либо пустой, либо список соседних занятых клеток
+            return adjacent;
         }
 
-        public (List<string> words, int totalScore) CalculateTurnScore(List<(int row, int col, Tile tile)> placedTiles) // главный метод подсчёта очков за ход
+        // Основной метод подсчёта очков – теперь использует позиции слов
+        public (List<string> words, int totalScore) CalculateTurnScore(List<(int row, int col, Tile tile)> placedTiles)
         {
-            // входные данные: список поставленных фишек с координатами и данными
             var words = new List<string>();
-            int totalScore = 0; // начальное значение очковв
-            bool wordMultiplierApplied = false; // флаг, показывающий, применен ли множитель слова
+            int totalScore = 0;
+            bool wordMultiplierApplied = false;
+            var newTilePositions = placedTiles.Select(t => (t.row, t.col)).ToHashSet();
 
             foreach (var (row, col, tile) in placedTiles)
             {
-                // Проверяем слова по горизонтали и вертикали
-                var horizontalWord = GetWordAtPosition(row, col, 0, 1); // слово по горизонтали
-                var verticalWord = GetWordAtPosition(row, col, 1, 0); // слово по вертикали
+                // Получаем слово и его клетки по горизонтали и вертикали
+                var (horizontalWord, hPositions) = GetWordAndPositions(row, col, 0, 1);
+                var (verticalWord, vPositions) = GetWordAndPositions(row, col, 1, 0);
 
-                if (!string.IsNullOrEmpty(horizontalWord) && !words.Contains(horizontalWord)) // слово не пустое и уникальное
+                if (!string.IsNullOrEmpty(horizontalWord) && !words.Contains(horizontalWord))
                 {
-                    int wordScore = CalculateWordScoreWithMultipliers(horizontalWord, row, col, 0, 1, ref wordMultiplierApplied); // рассчет очков за слово
-                    words.Add(horizontalWord); // добавляет слово в список
+                    int wordScore = CalculateWordScoreWithPositions(horizontalWord, hPositions, newTilePositions, ref wordMultiplierApplied);
+                    words.Add(horizontalWord);
                     totalScore += wordScore;
                 }
 
                 if (!string.IsNullOrEmpty(verticalWord) && !words.Contains(verticalWord))
                 {
-                    int wordScore = CalculateWordScoreWithMultipliers(verticalWord, row, col, 1, 0, ref wordMultiplierApplied);
-                    words.Add(verticalWord); // добавляет слово в список
+                    int wordScore = CalculateWordScoreWithPositions(verticalWord, vPositions, newTilePositions, ref wordMultiplierApplied);
+                    words.Add(verticalWord);
                     totalScore += wordScore;
                 }
             }
 
-            return (words, totalScore); // список уникальных слов и суммарные очки
+            return (words, totalScore);
         }
 
-        private string GetWordAtPosition(int startRow, int startCol, int rowStep, int colStep) // находит полное слово, проходя от начальной клетки в заданном направлении 
+        // Возвращает слово и список координат клеток, из которых оно состоит
+        private (string word, List<(int row, int col)> positions) GetWordAndPositions(int startRow, int startCol, int rowStep, int colStep)
         {
             var word = new StringBuilder();
+            var positions = new List<(int, int)>();
 
-            // Двигаемся влево/вверх до начала слова
-            //координаты начальной клетки
+            // Идём в начало слова
             int currentRow = startRow;
             int currentCol = startCol;
             while (currentRow - rowStep >= 0 && currentCol - colStep >= 0 &&
-                   grid[currentRow - rowStep, currentCol - colStep] != null) // двигается до начальной клекти слова(пока не край поля/пустая клетка)
+                   grid[currentRow - rowStep, currentCol - colStep] != null)
             {
                 currentRow -= rowStep;
                 currentCol -= colStep;
             }
 
-            // Собираем слово до конца
+            // Собираем слово и позиции
             while (currentRow < Size && currentCol < Size && grid[currentRow, currentCol] != null)
             {
                 word.Append(grid[currentRow, currentCol].Letter);
+                positions.Add((currentRow, currentCol));
                 currentRow += rowStep;
                 currentCol += colStep;
             }
 
-            return word.Length > 1 ? word.ToString() : string.Empty; // если в строке больше одной буквы, возвращается слово, иначе пустая строка
+            if (word.Length > 1)
+                return (word.ToString(), positions);
+            else
+                return (string.Empty, new List<(int, int)>());
         }
 
-        private int CalculateWordScoreWithMultipliers(string word, int startRow, int startCol, int rowStep, int colStep, ref bool wordMultiplierApplied) // рассчитывает очки для слова: суммирует очки букв с множителями букв, применяет множитель слова
+        // Подсчёт очков по готовым позициям (без повторного обхода поля)
+        private int CalculateWordScoreWithPositions(string word, List<(int row, int col)> positions,
+                                                    HashSet<(int, int)> newTilePositions, ref bool wordMultiplierApplied)
         {
             int baseScore = 0;
             int wordMultiplier = 1;
 
-            int currentRow = startRow;
-            int currentCol = startCol;
-
-            for (int i = 0; i < word.Length; i++)
+            for (int i = 0; i < positions.Count; i++)
             {
-                var tile = grid[currentRow, currentCol];
+                var (row, col) = positions[i];
+                var tile = grid[row, col];
+                if (tile == null)
+                    throw new InvalidOperationException($"Нет фишки в клетке ({row},{col}) при подсчёте очков для слова {word}");
+
                 int letterScore = tile.Weight;
 
-                // Применяем множители букв
-                if (IsDoubleLetter[currentRow, currentCol])
-                    letterScore *= 2;
-                else if (IsTripleLetter[currentRow, currentCol])
-                    letterScore *= 3;
+                // Множители букв – только для новых клеток
+                if (newTilePositions.Contains((row, col)))
+                {
+                    if (IsDoubleLetter[row, col])
+                        letterScore *= 2;
+                    else if (IsTripleLetter[row, col])
+                        letterScore *= 3;
+                }
 
                 baseScore += letterScore;
 
-                // Запоминаем множители слов (применяются один раз за ход)
-                if (!wordMultiplierApplied)
+                // Множители слов – только для новых клеток и только один раз за ход
+                if (!wordMultiplierApplied && newTilePositions.Contains((row, col)))
                 {
-                    if (IsDoubleWord[currentRow, currentCol])
+                    if (IsDoubleWord[row, col])
                         wordMultiplier *= 2;
-                    else if (IsTripleWord[currentRow, currentCol])
+                    else if (IsTripleWord[row, col])
                         wordMultiplier *= 3;
                 }
-
-                currentRow += rowStep;
-                currentCol += colStep;
             }
 
-            if (!wordMultiplierApplied && wordMultiplier > 1)
-            {
-                wordMultiplierApplied = true; // Применяем только один раз за ход
-            }
+            if (wordMultiplier > 1)
+                wordMultiplierApplied = true;
 
             return baseScore * wordMultiplier;
+        }
+
+        // Вспомогательный метод для обратной совместимости (если нужен)
+        private string GetWordAtPosition(int startRow, int startCol, int rowStep, int colStep)
+        {
+            return GetWordAndPositions(startRow, startCol, rowStep, colStep).word;
         }
 
         public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles)
