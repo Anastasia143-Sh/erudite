@@ -48,6 +48,7 @@
             pictureBox1 = new PictureBox();
             boardPanel = new Panel();
             btnCancell = new Button();
+            btnFix = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -79,7 +80,7 @@
             // 
             btnExchangeChips.BackColor = Color.Lavender;
             btnExchangeChips.FlatStyle = FlatStyle.Flat;
-            btnExchangeChips.Location = new Point(678, 482);
+            btnExchangeChips.Location = new Point(677, 400);
             btnExchangeChips.Name = "btnExchangeChips";
             btnExchangeChips.Size = new Size(155, 63);
             btnExchangeChips.TabIndex = 2;
@@ -91,7 +92,7 @@
             // 
             btnGiveUp.BackColor = Color.Lavender;
             btnGiveUp.FlatStyle = FlatStyle.Flat;
-            btnGiveUp.Location = new Point(678, 595);
+            btnGiveUp.Location = new Point(678, 469);
             btnGiveUp.Name = "btnGiveUp";
             btnGiveUp.Size = new Size(155, 63);
             btnGiveUp.TabIndex = 3;
@@ -239,13 +240,25 @@
             // 
             btnCancell.BackColor = Color.Lavender;
             btnCancell.FlatStyle = FlatStyle.Flat;
-            btnCancell.Location = new Point(678, 370);
+            btnCancell.Location = new Point(678, 590);
             btnCancell.Name = "btnCancell";
             btnCancell.Size = new Size(155, 63);
             btnCancell.TabIndex = 22;
             btnCancell.Text = "отмена";
             btnCancell.UseVisualStyleBackColor = false;
             btnCancell.Click += btnCancell_Click;
+            // 
+            // btnFix
+            // 
+            btnFix.BackColor = Color.Lavender;
+            btnFix.FlatStyle = FlatStyle.Flat;
+            btnFix.Location = new Point(678, 331);
+            btnFix.Name = "btnFix";
+            btnFix.Size = new Size(155, 63);
+            btnFix.TabIndex = 23;
+            btnFix.Text = "зафиксировать слово";
+            btnFix.UseVisualStyleBackColor = false;
+            btnFix.Click += btnFix_Click;
             // 
             // EruditeForm
             // 
@@ -255,6 +268,7 @@
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(854, 1014);
             Controls.Add(btnCancell);
+            Controls.Add(btnFix);
             Controls.Add(boardPanel);
             Controls.Add(pictureBox1);
             Controls.Add(lblCountChipsText);
@@ -306,5 +320,6 @@
         private PictureBox pictureBox1;
         private Panel boardPanel;
         private Button btnCancell;
+        private Button btnFix;
     }
 }

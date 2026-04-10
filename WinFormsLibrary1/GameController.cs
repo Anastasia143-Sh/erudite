@@ -72,7 +72,7 @@ namespace ClassLibrary
             }
         }
 
-        private void StartWordValidation(List<string> words, int score) // проверка слов
+        public void StartWordValidation(List<string> words, int score) // проверка слов
         {
             OnWordValidationStarted?.Invoke(words, score); 
 
@@ -81,7 +81,7 @@ namespace ClassLibrary
             CompleteTurn(words, score);
         }
 
-        private void CompleteTurn(List<string> words, int score) 
+        public void CompleteTurn(List<string> words, int score) 
         {
             var currentPlayer = GetCurrentPlayer();
             currentPlayer.AddScore(score); // добавляет очки игроку

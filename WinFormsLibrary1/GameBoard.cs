@@ -84,7 +84,7 @@ namespace ClassLibrary
 
         public bool RemoveTile(int row, int col) // удаляет фишку с поля
         {
-            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] == null)
+            if (row < 0 || row >= Size || col < 0 || col >= Size || grid[row, col] == null) // проверяет границы и занятость клетки
                 return false;
 
             grid[row, col] = null;
@@ -98,7 +98,7 @@ namespace ClassLibrary
             return row >= 0 && row < Size && col >= 0 && col < Size && grid[row, col] != null;
         }
 
-        public List<(int row, int col)> GetAdjacentTiles(int row, int col) //возвращает список соседних занятых клеток
+        public List<(int row, int col)> GetAdjacentTiles(int row, int col) //возвращает список соседних координат занятых клеток
         {
             var adjacent = new List<(int, int)>();
             int[] dr = { -1, 1, 0, 0 };
@@ -113,37 +113,38 @@ namespace ClassLibrary
                     adjacent.Add((newRow, newCol));
             }
 
-            return adjacent;
+            return adjacent; // либо пустой, либо список соседних занятых клеток
         }
 
         public (List<string> words, int totalScore) CalculateTurnScore(List<(int row, int col, Tile tile)> placedTiles) // главный метод подсчёта очков за ход
         {
+            // входные данные: список поставленных фишек с координатами и данными
             var words = new List<string>();
-            int totalScore = 0;
-            bool wordMultiplierApplied = false;
+            int totalScore = 0; // начальное значение очковв
+            bool wordMultiplierApplied = false; // флаг, показывающий, применен ли множитель слова
 
             foreach (var (row, col, tile) in placedTiles)
             {
                 // Проверяем слова по горизонтали и вертикали
-                var horizontalWord = GetWordAtPosition(row, col, 0, 1);
-                var verticalWord = GetWordAtPosition(row, col, 1, 0);
+                var horizontalWord = GetWordAtPosition(row, col, 0, 1); // слово по горизонтали
+                var verticalWord = GetWordAtPosition(row, col, 1, 0); // слово по вертикали
 
-                if (!string.IsNullOrEmpty(horizontalWord) && !words.Contains(horizontalWord))
+                if (!string.IsNullOrEmpty(horizontalWord) && !words.Contains(horizontalWord)) // слово не пустое и уникальное
                 {
-                    int wordScore = CalculateWordScoreWithMultipliers(horizontalWord, row, col, 0, 1, ref wordMultiplierApplied);
-                    words.Add(horizontalWord);
+                    int wordScore = CalculateWordScoreWithMultipliers(horizontalWord, row, col, 0, 1, ref wordMultiplierApplied); // рассчет очков за слово
+                    words.Add(horizontalWord); // добавляет слово в список
                     totalScore += wordScore;
                 }
 
                 if (!string.IsNullOrEmpty(verticalWord) && !words.Contains(verticalWord))
                 {
                     int wordScore = CalculateWordScoreWithMultipliers(verticalWord, row, col, 1, 0, ref wordMultiplierApplied);
-                    words.Add(verticalWord);
+                    words.Add(verticalWord); // добавляет слово в список
                     totalScore += wordScore;
                 }
             }
 
-            return (words, totalScore);
+            return (words, totalScore); // список уникальных слов и суммарные очки
         }
 
         private string GetWordAtPosition(int startRow, int startCol, int rowStep, int colStep) // находит полное слово, проходя от начальной клетки в заданном направлении 
@@ -151,10 +152,11 @@ namespace ClassLibrary
             var word = new StringBuilder();
 
             // Двигаемся влево/вверх до начала слова
+            //координаты начальной клетки
             int currentRow = startRow;
             int currentCol = startCol;
             while (currentRow - rowStep >= 0 && currentCol - colStep >= 0 &&
-                   grid[currentRow - rowStep, currentCol - colStep] != null)
+                   grid[currentRow - rowStep, currentCol - colStep] != null) // двигается до начальной клекти слова(пока не край поля/пустая клетка)
             {
                 currentRow -= rowStep;
                 currentCol -= colStep;
@@ -168,7 +170,7 @@ namespace ClassLibrary
                 currentCol += colStep;
             }
 
-            return word.Length > 1 ? word.ToString() : string.Empty;
+            return word.Length > 1 ? word.ToString() : string.Empty; // если в строке больше одной буквы, возвращается слово, иначе пустая строка
         }
 
         private int CalculateWordScoreWithMultipliers(string word, int startRow, int startCol, int rowStep, int colStep, ref bool wordMultiplierApplied) // рассчитывает очки для слова: суммирует очки букв с множителями букв, применяет множитель слова
@@ -213,21 +215,27 @@ namespace ClassLibrary
             return baseScore * wordMultiplier;
         }
 
-        public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles) // проверяет, корректен ли ход
+        public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles)
         {
             if (placedTiles.Count == 0) return false;
 
             // Первое размещение должно включать центральную клетку
-            if (GetAllTilesCount() == 0)
+            if (GetAllTilesCount() == 0) // первый ход
             {
-                return placedTiles.Any(t => t.row == 7 && t.col == 7);
+                bool passesThroughCenter = placedTiles.Any(t => t.row == 7 && t.col == 7);
+                if (!passesThroughCenter)
+                {
+                    return false; // первое слово должно проходить через (7,7)
+                }
             }
+            else // не первый ход
+            {
+                // Все фишки должны быть смежными
+                if (!AreTilesConnected(placedTiles)) return false;
 
-            // Все фишки должны быть смежными
-            if (!AreTilesConnected(placedTiles)) return false;
-
-            // Фишки должны соединяться с существующими на поле
-            if (!ConnectsToExistingTiles(placedTiles)) return false;
+                // Фишки должны соединяться с существующими на поле
+                if (!ConnectsToExistingTiles(placedTiles)) return false;
+            }
 
             // Слова должны быть валидными (проверка через словарь)
             var (words, _) = CalculateTurnScore(placedTiles);

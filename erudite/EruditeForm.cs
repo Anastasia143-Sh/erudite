@@ -24,6 +24,8 @@ namespace erudite
         private (int row, int col)? _targetCell; // Целевая клетка (если выбрана)
         private Stack<(int row, int col, Tile tile)> _placedTilesDuringTurn = new Stack<(int, int, Tile)>(); // Хранит размещённые фишки текущего хода
         private bool _isTurnInProgress = false; // Флаг: идёт ли текущий ход
+        private bool _isFirstMove = false;
+        private bool _isFix = false;
 
         public EruditeForm(InitialForm previousForm, List<Player> players)
         {
@@ -411,6 +413,11 @@ namespace erudite
                 _isTurnInProgress = false;
                 MessageBox.Show("Все фишки возвращены в руку. Ход отменён.");
             }
+        }
+
+        private void btnFix_Click(object sender, EventArgs e)
+        {
+            
         }
     }
 }

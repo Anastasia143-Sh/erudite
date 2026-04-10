@@ -25,7 +25,7 @@ namespace ClassLibrary
             Score += points;
         }
 
-        public void Resign()
+        public void Resign() // отмечает, что игрок сался
         {
             HasResigned = true;
         }
