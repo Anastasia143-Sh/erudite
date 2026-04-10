@@ -1,5 +1,8 @@
 ﻿namespace ClassLibrary
 {
+    /// <summary>
+    /// Игровая фишка с буквой и весом 
+    /// </summary>
     public class Tile
     {
         public char Letter { get; set; }

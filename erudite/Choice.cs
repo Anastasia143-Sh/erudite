@@ -13,6 +13,10 @@ using static System.Windows.Forms.DataFormats;
 
 namespace erudite
 {
+    /// <summary>
+    /// Форма выбора персонажей для игроков 
+    /// Позволяет каждому игроку выбрать уникального персонажа из мультсериала «Смешарики»
+    /// </summary>
     public partial class Choice : Form
     {
         private InitialForm _previousForm;
@@ -34,11 +38,18 @@ namespace erudite
             this.Load += Choice_Load;
         }
 
+        /// <summary>
+        /// Обработчик события загрузки формы
+        /// </summary>
         private void Choice_Load(object sender, EventArgs e)
         {
             UpdatePlayerTurnLabel();
         }
 
+        /// <summary>
+        /// Обновляет текст метки (lblInfo) с указанием текущего игрока и отображает соответствующее изображение персонажа
+        /// Если все игроки выбрали персонажей, отображает сообщение об окончании выбора
+        /// </summary>
         private void UpdatePlayerTurnLabel()
         {
             // Проверка границ массива
@@ -84,7 +95,10 @@ namespace erudite
             }
         }
 
-
+        /// <summary>
+        /// Обработчик нажатия кнопки «Закрыть»
+        /// Показывает диалоговое окно подтверждения и закрывает форму, возвращая пользователя на начальную форму
+        /// </summary>
         private void btnClose_Click(object sender, EventArgs e)
         {
             // Показываем диалоговое окно с подтверждением
@@ -107,6 +121,11 @@ namespace erudite
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки подтверждения выбора персонажа (btnCoice)
+        /// Проверяет, не выбран ли персонаж другим игроком, сохраняет выбор, переходит к следующему игроку
+        /// При завершении выбора всех персонажей открывает основную игровую форму
+        /// </summary>
         private void btnCoice_Click(object sender, EventArgs e)
         {
             if (_imageIndexes.Contains(imageIndex))
@@ -129,7 +148,6 @@ namespace erudite
             }
             else
             {
-                // Создаём список игроков на основе выбранных данных
                 List<Player> players = new List<Player>();
                 for (int i = 0; i < _playerCount; i++)
                 {
@@ -144,19 +162,27 @@ namespace erudite
 
                 if (result == DialogResult.OK)
                 {
-                    EruditeForm newForm = new EruditeForm(_previousForm, players); // Передаём список игроков
+                    EruditeForm newForm = new EruditeForm(_previousForm, players); 
                     newForm.Show();
                     this.Close();
                 }
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки «Далее» (btnNext)
+        /// Переключает на следующего доступного персонажа (циклически: 0→1→2→...→8→0)
+        /// </summary>
         private void btnNext_Click(object sender, EventArgs e)
         {
-            imageIndex = (imageIndex + 1) % 9; // Цикл: 0→1→2→0
+            imageIndex = (imageIndex + 1) % 9; 
             UpdatePlayerTurnLabel();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки «Назад» (btnPrev)
+        /// Переключает на предыдущего доступного персонажа (циклически: 8→7→6→…→0→8)
+        /// </summary>
         private void btnPrev_Click(object sender, EventArgs e)
         {
             imageIndex = (imageIndex - 1 + 9) % 9; // Цикл: 2→1→0→2

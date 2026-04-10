@@ -7,29 +7,30 @@ using ClassLibrary;
 
 namespace erudite
 {
+    /// <summary>
+    /// Основная форма 
+    /// Отображает игровое поле, руку игрока, счёт, реализует логику размещения фишек, голосования и обмена
+    /// </summary>
     public partial class EruditeForm : Form
     {
-        // Существующие поля
         private GameController gameController;
         private BagOfTiles _bagOfTiles;
         private InitialForm _previousForm;
         private List<Player> _players = new List<Player>();
-        private PictureBox[,] boardCells = new PictureBox[15, 15];
         private const int CELL_SIZE = 40;
         private Tile _selectedTile;
         private Button _selectedTileButton;
         private (int row, int col)? _targetCell;
         private Stack<(int row, int col, Tile tile)> _placedTilesDuringTurn = new Stack<(int, int, Tile)>();
-        private bool _isTurnInProgress = false;
-        private bool _isFirstMove = false;   // флаг первого хода (устанавливается после первой успешной фиксации)
-        private bool _isFix = false;         // зафиксировано ли слово в текущем ходу
+        private bool _isTurnInProgress = false; 
+        private bool _isFix = false; // зафиксировано ли слово в текущем ходу
 
-        // Новые поля для реализации требований
-        private List<(int row, int col)> _fixedTiles = new List<(int, int)>();   // зафиксированные (но ещё не принятые) клетки
+        private List<(int row, int col)> _fixedTiles = new List<(int, int)>(); // зафиксированные (но ещё не принятые) клетки
         private List<(int row, int col)> _acceptedTiles = new List<(int, int)>(); // уже принятые клетки (сохраняются между ходами)
-        private int _tempScore = 0;           // временные очки за зафиксированное слово (до голосования)
+        private int _tempScore = 0; // временные очки за зафиксированное слово (до голосования)
         private List<string> _wordsToVote = new List<string>(); // слова, ожидающие голосования
-        private bool _canPlace = true;        // разрешено ли размещать новые фишки (после фиксации – false)
+        //private bool _canPlace = true; // разрешено ли размещать новые фишки (после фиксации – false)
+
 
         public EruditeForm(InitialForm previousForm, List<Player> players)
         {
@@ -39,6 +40,11 @@ namespace erudite
             this.Load += EruditeForm_Load;
         }
 
+        /// <summary>
+        /// Обработчик события загрузки формы
+        /// Инициализирует игровой контроллер, подписывается на события, настраивает визуальные элементы
+        /// При ошибке возвращает пользователя на начальную форму
+        /// </summary>
         private void EruditeForm_Load(object sender, EventArgs e)
         {
             try
@@ -46,7 +52,6 @@ namespace erudite
                 gameController = new GameController(_players);
                 gameController.OnPlayerTurnStarted += OnCurrentPlayerChanged;
                 gameController.OnPlayerScored += OnPlayerScored;
-                gameController.OnWordValidationStarted += ShowWordValidationDialog;
                 gameController.OnGameEnded += OnGameFinished;
 
                 InitializeBoardVisuals();
@@ -68,12 +73,15 @@ namespace erudite
             }
         }
 
-        // Сброс переменных, связанных с текущим ходом (вызывается при начале нового хода)
+        /// <summary>
+        /// Сбрасывает переменные, связанные с текущим ходом (вызывается при начале нового хода)
+        /// Очищает временные данные, обновляет визуальное состояние поля
+        /// </summary>
         private void ResetTurnState()
         {
             _isTurnInProgress = false;
             _isFix = false;
-            _canPlace = true;
+            //_canPlace = true;
             _placedTilesDuringTurn.Clear();
             _fixedTiles.Clear();
             _wordsToVote.Clear();
@@ -81,10 +89,14 @@ namespace erudite
             _selectedTile = null;
             _selectedTileButton = null;
             _targetCell = null;
-            UpdateBoardVisuals();  // перерисовка с учётом _acceptedTiles
+            UpdateBoardVisuals();  
         }
 
-        // Обработчик смены игрока
+        /// <summary>
+        /// Обработчик смены текущего игрока
+        /// Обновляет интерфейс, отображает информацию о текущем игроке, показывает сообщение о передаче хода
+        /// </summary>
+        /// <param name="player">Текущий игрок, которому передаётся ход</param>
         private void OnCurrentPlayerChanged(Player player)
         {
             ResetTurnState();
@@ -95,18 +107,23 @@ namespace erudite
             MessageBox.Show($"Ход передается игроку: {player.Name}. Передайте ему/ей ноутбук, после нажмите ОК", "Передача хода");
         }
 
+        /// <summary>
+        /// Обработчик начисления очков игроку
+        /// Обновляет отображение счёта и показывает уведомление о набранных очках
+        /// </summary>
+        /// <param name="player">Игрок, которому начислены очки</param>
+        /// <param name="score">Количество начисленных очков</param>
         private void OnPlayerScored(Player player, int score)
         {
             UpdateScoreDisplay();
             MessageBox.Show($"{player.Name} набрал {score} очков!");
         }
 
-        private void ShowWordValidationDialog(List<string> words, int score)
-        {
-            // Этот метод вызывается из GameController.StartWordValidation, но мы не используем его,
-            // т.к. голосование реализовано отдельно. Можно оставить пустым или удалить подписку.
-        }
-
+        /// <summary>
+        /// Обработчик завершения игры
+        /// Отображает сообщение о победителе и возвращает пользователя на начальную форму
+        /// </summary>
+        /// <param name="winner">Игрок, победивший в игре</param>
         private void OnGameFinished(Player winner)
         {
             MessageBox.Show($"Игра окончена! Победитель: {winner.Name}");
@@ -114,7 +131,10 @@ namespace erudite
             this.Close();
         }
 
-        // Инициализация визуального поля
+        /// <summary>
+        /// Инициализирует визуальное представление игрового поля (15×15 клеток)
+        /// Создаёт кнопки для каждой клетки и добавляет их на панель boardPanel
+        /// </summary>
         private void InitializeBoardVisuals()
         {
             boardPanel.SuspendLayout();
@@ -127,6 +147,13 @@ namespace erudite
             boardPanel.PerformLayout();
         }
 
+        /// <summary>
+        /// Создаёт кнопку для клетки игрового поля
+        /// Настраивает внешний вид и обработчик клика
+        /// </summary>
+        /// <param name="row">Индекс строки клетки</param>
+        /// <param name="col">Индекс столбца клетки</param>
+        /// <returns>Кнопка, представляющая клетку поля</returns>
         private Button CreateBoardCell(int row, int col)
         {
             Button button = new Button
@@ -143,14 +170,12 @@ namespace erudite
             return button;
         }
 
-        // Клик по клетке поля – размещение выбранной фишки
+        /// <summary>
+        /// Обработчик клика по клетке игрового поля
+        /// Размещает выбранную фишку на поле, если это разрешено правилами
+        /// </summary>
         private void BoardCell_Click(object sender, EventArgs e)
         {
-            if (!_canPlace)
-            {
-                MessageBox.Show("Слово уже зафиксировано. Завершите ход");
-                return;
-            }
 
             Button clickedCell = (Button)sender;
             var (row, col) = ((int, int))clickedCell.Tag;
@@ -188,7 +213,10 @@ namespace erudite
             }
         }
 
-        // Обновление внешнего вида поля с учётом статуса клеток
+        /// <summary>
+        /// Обновляет внешний вид игрового поля с учётом статуса клеток (принятые, зафиксированные, размещённые)
+        /// Изменяет текст и цвет кнопок клеток в зависимости от наличия фишек и их статуса
+        /// </summary>
         private void UpdateBoardVisuals()
         {
             boardPanel.SuspendLayout();
@@ -208,19 +236,22 @@ namespace erudite
 
                     // Определяем цвет клетки
                     if (_acceptedTiles.Contains((row, col)))
-                        cell.BackColor = Color.Lavender;          // принятые клетки
+                        cell.BackColor = Color.Lavender; // принятые клетки
                     else if (_fixedTiles.Contains((row, col)))
-                        cell.BackColor = Color.LightGreen;        // зафиксированные (ожидают голосования)
+                        cell.BackColor = Color.LightGreen; // зафиксированные (ожидают голосования)
                     else if (_placedTilesDuringTurn.Any(p => p.row == row && p.col == col))
-                        cell.BackColor = Color.GhostWhite;        // размещённые, но ещё не зафиксированные
+                        cell.BackColor = Color.GhostWhite; // размещённые, но ещё не зафиксированные
                     else
-                        cell.BackColor = Color.Transparent;       // пустые
+                        cell.BackColor = Color.Transparent; // пустые
                 }
             }
             boardPanel.ResumeLayout(true);
         }
 
-        // Отображение руки текущего игрока
+        /// <summary>
+        /// Инициализирует отображение руки текущего игрока (набор фишек)
+        /// Очищает панель handPanel и добавляет кнопки для каждой фишки в руке игрока
+        /// </summary>
         private void InitializePlayerHand()
         {
             handPanel.SuspendLayout();
@@ -233,6 +264,13 @@ namespace erudite
             handPanel.ResumeLayout(true);
         }
 
+        /// <summary>
+        /// Создаёт кнопку для фишки в руке игрока 
+        /// Настраивает внешний вид и обработчик клика
+        /// </summary>
+        /// <param name="tile">Фишка, которую представляет кнопка</param>
+        /// <param name="index">Индекс фишки в руке игрока</param>
+        /// <returns>Кнопка, представляющая фишку</returns>
         private Button CreateTileButton(Tile tile, int index)
         {
             Button button = new Button
@@ -247,14 +285,12 @@ namespace erudite
             return button;
         }
 
+        /// <summary>
+        /// Обработчик клика по кнопке фишки в руке игрока
+        /// Выбирает или отменяет выбор фишки, изменяет цвет кнопки
+        /// </summary>
         private void TileButton_Click(object sender, EventArgs e)
         {
-            if (!_canPlace)
-            {
-                MessageBox.Show("Слово уже зафиксировано. Нельзя выбирать фишки для размещения.");
-                return;
-            }
-
             Button clickedButton = (Button)sender;
             Tile tile = (Tile)clickedButton.Tag;
 
@@ -272,7 +308,10 @@ namespace erudite
             _targetCell = null;
         }
 
-        // Обновление отображения имён и счетов игроков
+        /// <summary>
+        /// Обновляет отображение имён и счетов игроков на экране
+        /// Заполняет метки для до 4 игроков, скрывает лишние, если игроков меньше
+        /// </summary>
         private void UpdatePlayerLabels()
         {
             var cur = gameController.GetCurrentPlayer();
@@ -292,6 +331,10 @@ namespace erudite
             lblName.Text = cur.Name;
         }
 
+        /// <summary>
+        /// Обновляет отображение счёта всех игроков
+        /// Заполняет метки с именами и очками для до 4 игроков
+        /// </summary>
         private void UpdateScoreDisplay()
         {
             var scoreLabels = new[]
@@ -320,14 +363,12 @@ namespace erudite
         }
 
 
-        // Фиксация текущего размещённого слова
+        /// <summary>
+        /// Обработчик нажатия кнопки «Фиксация» (btnFix)
+        /// Фиксирует размещённое слово, проверяет валидность хода, вычисляет очки и слова
+        /// </summary>
         private void btnFix_Click(object sender, EventArgs e)
         {
-            if (_isFix)
-            {
-                MessageBox.Show("Слово уже зафиксировано в этом ходу. Завершите ход или отмените.");
-                return;
-            }
             if (_placedTilesDuringTurn.Count == 0)
             {
                 MessageBox.Show("Нет размещённых фишек для фиксации.");
@@ -337,7 +378,7 @@ namespace erudite
             var placedList = _placedTilesDuringTurn.ToList();
             
 
-            // Валидация хода через GameBoard
+            // Валидация хода
             var moveTiles = placedList.Select(p => (p.row, p.col, p.tile)).ToList();
             if (!gameController.GetBoard().IsValidMove(moveTiles))
             {
@@ -365,13 +406,15 @@ namespace erudite
             _placedTilesDuringTurn.Clear();
 
             _isFix = true;
-            //_canPlace = false;   // после фиксации больше нельзя добавлять фишки
 
-            UpdateBoardVisuals(); // клетки станут LightGreen
+            UpdateBoardVisuals();
             MessageBox.Show($"Слово зафиксировано! Начислено {totalScore} очков (будут учтены после голосования).");
         }
 
-        // Завершение хода
+        /// <summary>
+        /// Обработчик нажатия кнопки «Завершить ход» (btnComplete)
+        /// Если слово не зафиксировано, предлагает передать ход, если зафиксировано — запускает голосование
+        /// </summary>
         private void btnComplete_Click(object sender, EventArgs e)
         {
             if (!_isFix)
@@ -390,17 +433,14 @@ namespace erudite
             StartVoting();
         }
 
-        // Голосование
+        /// <summary>
+        /// Запускает процесс голосования за зафиксированные слова.
+        /// Показывает диалог голосования, обрабатывает результат (принятие/отклонение).
+        /// </summary>
         private void StartVoting()
         {
             var currentPlayer = gameController.GetCurrentPlayer();
             var otherPlayers = _players.Where(p => p != currentPlayer && !p.HasResigned).ToList();
-            if (otherPlayers.Count == 0)
-            {
-                // Нет других игроков – автоматически принимаем
-                AcceptWords();
-                return;
-            }
 
             using (var voteForm = new VoteForm(currentPlayer.Name, _wordsToVote, _tempScore, otherPlayers))
             {
@@ -416,7 +456,10 @@ namespace erudite
             }
         }
 
-        // Принятие слов после голосования
+        /// <summary>
+        /// Принимает слова после успешного голосования
+        /// Начисляет очки, добирает фишки до 7, обновляет интерфейс, передаёт ход
+        /// </summary>
         private void AcceptWords()
         {
             // Фиксируем зафиксированные клетки как принятые
@@ -435,7 +478,7 @@ namespace erudite
             _wordsToVote.Clear();
             _tempScore = 0;
             _isFix = false;
-            _canPlace = true;
+            //_canPlace = true;
 
             UpdateBoardVisuals(); // клетки станут Lavender
             InitializePlayerHand();
@@ -444,7 +487,10 @@ namespace erudite
             gameController.NextPlayer();
         }
 
-        // Отклонение слов – возврат фишек игроку
+        /// <summary>
+        /// Отклоняет слова после голосования
+        /// Возвращает фишки игроку, предлагает продолжить ход или передать его следующему
+        /// </summary>
         private void RejectWords()
         {
             var currentPlayer = gameController.GetCurrentPlayer();
@@ -462,7 +508,7 @@ namespace erudite
             _wordsToVote.Clear();
             _tempScore = 0;
             _isFix = false;
-            _canPlace = true;
+            //_canPlace = true;
 
             UpdateBoardVisuals();
             InitializePlayerHand();
@@ -472,7 +518,6 @@ namespace erudite
             if (res == DialogResult.Yes)
             {
                 // Продолжаем ход – игрок может снова размещать фишки
-                // Ничего не делаем, просто возвращаем управление
             }
             else
             {
@@ -480,7 +525,11 @@ namespace erudite
             }
         }
 
-        // Добор фишек до 7 (метод можно сделать публичным в GameController, но здесь используем прямой доступ к мешку)
+        /// <summary>
+        /// Добирает фишки игроку до 7 из мешка, если это возможно
+        /// Обновляет отображение количества оставшихся фишек
+        /// </summary>
+        /// <param name="player">Игрок, которому нужно добрать фишки</param>
         private void RefillPlayerHand(Player player)
         {
             int needed = 7 - player.Hand.Count;
@@ -492,7 +541,10 @@ namespace erudite
             }
         }
 
-        // Отмена последней размещённой фишки (до фиксации)
+        /// <summary>
+        /// Обработчик нажатия кнопки «Отмена» (btnCancell)
+        /// Отменяет последнюю размещённую фишку (до фиксации слова), возвращает её игроку
+        /// </summary>
         private void btnCancell_Click(object sender, EventArgs e)
         {
             if (_isFix)
@@ -517,7 +569,10 @@ namespace erudite
                 _isTurnInProgress = false;
         }
 
-        // Обмен фишек
+        /// <summary>
+        /// Обработчик нажатия кнопки «Обмен фишек» (btnExchangeChips)
+        /// Позволяет игроку обменять фишки, если нет незафиксированных фишек и достаточно фишек в мешке
+        /// </summary>
         private void btnExchangeChips_Click(object sender, EventArgs e)
         {
             var currentPlayer = gameController.GetCurrentPlayer();
@@ -545,11 +600,15 @@ namespace erudite
             gameController.ExchangeTiles(currentPlayer, selectedTiles);
             InitializePlayerHand();
             lblCountChips.Text = $"{_bagOfTiles.RemainingCount}";
-            // После обмена ход уже переключён в ExchangeTiles, но нужно сбросить состояние формы
             ResetTurnState();
-            // Обновляем отображение (OnPlayerTurnChanged вызовется автоматически)
         }
 
+        /// <summary>
+        /// Показывает диалог выбора фишек для обмена
+        /// Позволяет игроку выбрать фишки из своей руки для обмена, подсвечивает выбранные
+        /// </summary>
+        /// <param name="playerHand">Текущая рука игрока (список фишек)</param>
+        /// <returns>Список выбранных фишек или null, если выбор отменён</returns>
         private List<Tile> ShowExchangeSelectionDialog(List<Tile> playerHand)
         {
             var selectedTiles = new List<Tile>();
@@ -606,7 +665,10 @@ namespace erudite
             return form.ShowDialog() == DialogResult.OK ? selectedTiles : null;
         }
 
-        // Сдаться
+        /// <summary>
+        /// Обработчик нажатия кнопки «Сдаться» (btnGiveUp)
+        /// Позволяет текущему игроку сдаться, выбывает из игры, передаёт ход следующему
+        /// </summary>
         private void btnGiveUp_Click(object sender, EventArgs e)
         {
             var current = gameController.GetCurrentPlayer();
@@ -615,11 +677,12 @@ namespace erudite
             if (res == DialogResult.Yes)
             {
                 gameController.ResignPlayer(current);
-                // Если игра не закончена, OnPlayerTurnStarted переключит ход и сбросит состояние
             }
         }
 
-        // Выход из игры
+        /// <summary>
+        /// Обработчик нажатия кнопки «Выход» (btnExit)
+        /// </summary>
         private void btnExit_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Вы уверены, что хотите завершить игру?\nПрогресс будет потерян.",

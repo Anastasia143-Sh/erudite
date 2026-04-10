@@ -6,20 +6,23 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary
 {
+    /// <summary>
+    /// Контроллер игры
+    /// </summary>
     public class GameController
     {
         private List<Player> players;
         private BagOfTiles bag;
         private GameBoard board;
-        private int currentPlayerIndex = 0;
+        private int currentPlayerIndex = 0; // индекс текущего игрока
         private bool isGameActive = true;
-        private Dictionary<Player, int> finalScores = new Dictionary<Player, int>();
+        private Dictionary<Player, int> finalScores = new Dictionary<Player, int>(); // словарь с финальными очками каждого игрока по завершении игры
 
-        public event Action<Player> OnPlayerTurnStarted;
-        public event Action<List<string>, int> OnWordValidationStarted;
-        public event Action<Player, int> OnPlayerScored;
-        public event Action<Player> OnPlayerResigned;
-        public event Action<Player> OnGameEnded;
+        public event Action<Player> OnPlayerTurnStarted; // событие, возникающее в начале хода текущего игрока
+        public event Action<List<string>, int> OnWordValidationStarted; // событие, сигнализирующее о начале проверки слов
+        public event Action<Player, int> OnPlayerScored; // событие, уведомляющее о начислении очков игроку
+        public event Action<Player> OnPlayerResigned; // событие, возникающее, когда игрок сдаётся
+        public event Action<Player> OnGameEnded; // событие, сигнализирующее об окончании игры и объявлении победителя
 
         public GameController(List<Player> players)
         {
@@ -29,7 +32,10 @@ namespace ClassLibrary
             InitializePlayers();
         }
 
-        private void InitializePlayers() // раздает по 7 фишек из мешка и запускает первый ход
+        /// <summary>
+        /// Раздаёт каждому по 7 фишек из мешка и запускает первый ход
+        /// </summary>
+        private void InitializePlayers() 
         {
             foreach (var player in players)
             {
@@ -38,73 +44,12 @@ namespace ClassLibrary
             StartNextTurn();
         }
 
-        public void EndTurn(List<(int row, int col, Tile tile)> placedTiles) // завершает ход игрока
-        {
-            var currentPlayer = GetCurrentPlayer();
-
-            // Проверяем корректность хода
-            if (!board.IsValidMove(placedTiles))
-            {
-                // Возвращаем фишки игроку
-                ReturnTilesToPlayer(placedTiles, currentPlayer);
-                return;
-            }
-
-            // Запускаем модерацию слов
-            if (placedTiles.Count > 0)
-            {
-                var (words, score) = board.CalculateTurnScore(placedTiles);
-                StartWordValidation(words, score);
-            }
-            else
-            {
-                // Если игрок ничего не поставил, просто переходим к следующему ходу
-                NextPlayer();
-            }
-        }
-
-        private void ReturnTilesToPlayer(List<(int row, int col, Tile tile)> tiles, Player player) // возвращает фишки на руку игрока, если ход невалиден
-        {
-            foreach (var (row, col, tile) in tiles)
-            {
-                board.RemoveTile(row, col);
-                player.Hand.Add(tile);
-            }
-        }
-
-        public void StartWordValidation(List<string> words, int score) // проверка слов
-        {
-            OnWordValidationStarted?.Invoke(words, score); 
-
-            // В реальном приложении здесь будет ожидание голосования игроков
-            // Для примера сразу принимаем слова
-            CompleteTurn(words, score);
-        }
-
-        public void CompleteTurn(List<string> words, int score) 
-        {
-            var currentPlayer = GetCurrentPlayer();
-            currentPlayer.AddScore(score); // добавляет очки игроку
-            OnPlayerScored?.Invoke(currentPlayer, score);
-
-            // Обновляем руку игрока
-            RefillPlayerHand(currentPlayer);
-
-            // Переходим к следующему игроку
-            NextPlayer();
-        }
-
-        private void RefillPlayerHand(Player player) // дополняет руку игрока до 7 фишек из мешка, если есть фишки
-        {
-            int tilesNeeded = 7 - player.Hand.Count;
-            if (tilesNeeded > 0 && bag.RemainingCount > 0)
-            {
-                var newTiles = bag.DrawTiles(tilesNeeded);
-                player.Hand.AddRange(newTiles);
-            }
-        }
-
-        public void NextPlayer() // переходит к следующему активному игроку
+        /// <summary>
+        /// Переходит к следующему активному игроку (пропускает сдавшихся)
+        /// Проверяет, не закончилась ли игра, и если да, завершает её
+        /// Иначе запускает ход следующего игрока
+        /// </summary>
+        public void NextPlayer() 
         {
             do
             {
@@ -121,12 +66,20 @@ namespace ClassLibrary
             }
         }
 
-        public void StartNextTurn() // уведомляет о начале хода текущего игрока через событие
+        /// <summary>
+        /// Уведомляет о начале хода текущего игрока через событие
+        /// </summary>
+        public void StartNextTurn() 
         {
             var currentPlayer = GetCurrentPlayer();
             OnPlayerTurnStarted?.Invoke(currentPlayer);
         }
 
+        /// <summary>
+        /// Обрабатывает сдачу игрока: отмечает его как сдавшегося, сохраняет финальный счёт,
+        /// проверяет, не закончилась ли игра, и передаёт ход следующему активному игроку
+        /// </summary>
+        /// <param name="player">Игрок, решивший сдаться</param>
         public void ResignPlayer(Player player)
         {
             player.Resign(); // отмечаем как сдавшегося
@@ -139,10 +92,14 @@ namespace ClassLibrary
             }
             else
             {
-                NextPlayer(); // передаём ход следующему активному игроку
+                NextPlayer(); 
             }
         }
 
+        /// <summary>
+        /// Проверяет, не закончилась ли игра
+        /// </summary>
+        /// <returns>True, если игра должна быть завершена, иначе — false.</returns>
         private bool IsGameOver() // проверка на окончание игры
         {
             var activePlayers = players.Where(p => !p.HasResigned).ToList();
@@ -155,7 +112,10 @@ namespace ClassLibrary
             return activePlayers.Count < 2;
         }
 
-        private void EndGame() // завершение игры
+        /// <summary>
+        /// Завершает игру: фиксирует финальные результаты, определяет победителя и уведомляет о завершении через событие
+        /// </summary>
+        private void EndGame() 
         {
             isGameActive = false;
 
@@ -174,22 +134,39 @@ namespace ClassLibrary
             OnGameEnded?.Invoke(winner);
         }
 
-        public Player GetCurrentPlayer() => players[currentPlayerIndex]; 
+        /// <summary>
+        /// Получает текущего активного игрока по индексу
+        /// </summary>
+        /// <returns>Текущий игрок</returns>
+        public Player GetCurrentPlayer() => players[currentPlayerIndex];
 
+        /// <summary>
+        /// Предоставляет доступ к игровому полю
+        /// </summary>
+        /// <returns>Экземпляр игрового поля</returns>
         public GameBoard GetBoard() => board;
 
+        /// <summary>
+        /// Предоставляет доступ к мешку с фишками
+        /// </summary>
+        /// <returns>Экземпляр мешка с фишками</returns>
         public BagOfTiles GetBag() => bag;
 
-        public List<Player> GetPlayers() => players;
-
-        public bool IsActive() => isGameActive;
-
+        /// <summary>
+        /// Возвращает финальные результаты игры для всех игроков
+        /// </summary>
+        /// <returns>Словарь, где ключ — игрок, значение — его финальный счёт</returns>
         public Dictionary<Player, int> GetFinalScores() => finalScores;
 
-        // Метод для обмена фишек
+        /// <summary>
+        /// Позволяет игроку обменять выбранные фишки на новые из мешка
+        /// Игрок пропускает ход после обмена
+        /// </summary>
+        /// <param name="player">Игрок, запрашивающий обмен</param>
+        /// <param name="tilesToExchange">Список фишек, которые нужно обменять</param>
         public void ExchangeTiles(Player player, List<Tile> tilesToExchange)
         {
-            if (!isGameActive || player != GetCurrentPlayer()) return;
+            if (player != GetCurrentPlayer()) return;
 
             // Возвращаем фишки в мешок
             bag.ReturnTiles(tilesToExchange);
@@ -208,10 +185,17 @@ namespace ClassLibrary
             NextPlayer();
         }
 
-        // Проверка, может ли игрок обменять фишки (должно быть достаточно фишек в мешке)
+        /// <summary>
+        /// Проверяет возможность обмена фишек: достаточно ли фишек в мешке для обмена указанного количества
+        /// </summary>
+        /// <param name="count">Количество фишек, которые планируется обменять</param>
+        /// <returns>True, если в мешке достаточно фишек; иначе — false</returns>
         public bool CanExchangeTiles(int count) => bag.RemainingCount >= count;
 
-        // Получение информации о текущем состоянии игры
+        /// <summary>
+        /// Формирует объект с текущим состоянием игры для передачи внешним компонентам
+        /// </summary>
+        /// <returns>Объект <see cref="GameState"/> с актуальной информацией о состоянии игры</returns>
         public GameState GetGameState()
         {
             return new GameState
