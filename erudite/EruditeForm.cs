@@ -1,9 +1,10 @@
-﻿using System;
+﻿using ClassLibrary;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
-using ClassLibrary;
 
 namespace erudite
 {
@@ -126,7 +127,18 @@ namespace erudite
         /// <param name="winner">Игрок, победивший в игре</param>
         private void OnGameFinished(Player winner)
         {
-            MessageBox.Show($"Игра окончена! Победитель: {winner.Name}");
+            var results = gameController.GetFinalScores();
+            // Если в finalScores нет кого-то, добавим из players
+            var allPlayers = gameController.GetPlayersSortedByScore();
+            var sb = new StringBuilder();
+            sb.AppendLine($"Игра окончена! Победитель: {winner?.Name ?? "никто"}");
+            sb.AppendLine("Результаты:");
+            foreach (var player in allPlayers)
+            {
+                int score = results.ContainsKey(player) ? results[player] : player.Score;
+                sb.AppendLine($"{player.Name}: {score} очков");
+            }
+            MessageBox.Show(sb.ToString(), "Конец игры");
             _previousForm.Show();
             this.Close();
         }

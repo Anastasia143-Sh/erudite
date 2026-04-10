@@ -192,6 +192,8 @@ namespace ClassLibrary
         /// <returns>True, если в мешке достаточно фишек; иначе — false</returns>
         public bool CanExchangeTiles(int count) => bag.RemainingCount >= count;
 
+        public List<Player> GetPlayersSortedByScore() => players.OrderByDescending(p => p.Score).ToList();
+
         /// <summary>
         /// Формирует объект с текущим состоянием игры для передачи внешним компонентам
         /// </summary>
