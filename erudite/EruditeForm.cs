@@ -87,30 +87,47 @@ namespace erudite
             this.Close();
         }
 
-        private void InitializeBoardVisuals() // создаёт 225 кнопок (15×15) для клеток поля, добавляет их в boardPanel;
+        private void InitializeBoardVisuals()
         {
+            // Отключаем перерисовку панели во время создания кнопок
+            boardPanel.SuspendLayout();
+
+            var buttonsToAdd = new List<Button>();
+
             for (int row = 0; row < 15; row++)
             {
                 for (int col = 0; col < 15; col++)
                 {
                     Button cell = CreateBoardCell(row, col);
-                    boardPanel.Controls.Add(cell);
+                    buttonsToAdd.Add(cell);
                 }
             }
+
+            // Добавляем все кнопки разом
+            boardPanel.Controls.AddRange(buttonsToAdd.ToArray());
+
+            // Включаем перерисовку обратно
+            boardPanel.ResumeLayout(false);
+            boardPanel.PerformLayout();
         }
 
-        private Button CreateBoardCell(int row, int col) // создаёт одну кнопку-клетку с координатами в Tag
+
+        private Button CreateBoardCell(int row, int col)
         {
             Button button = new Button
             {
-                Size = new Size(40, 40),
-                Location = new Point(col * 40, row * 40),
+                Size = new Size(CELL_SIZE, CELL_SIZE),
+                Location = new Point(col * CELL_SIZE, row * CELL_SIZE),
                 Tag = (row, col),
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                Text = "",
+                Enabled = true
             };
             button.Click += BoardCell_Click;
             return button;
         }
+
 
         private void BoardCell_Click(object sender, EventArgs e)
         {
@@ -164,38 +181,56 @@ namespace erudite
 
         private void UpdateBoardVisuals()
         {
+            // Отключаем перерисовку во время обновления
+            boardPanel.SuspendLayout();
+
             foreach (Control control in boardPanel.Controls)
             {
                 if (control is Button cell && cell.Tag is (int row, int col))
                 {
                     var tile = gameController.GetBoard().GetTile(row, col);
-                    if (tile != null)
+                    bool isTileOnCell = tile != null;
+                    bool wasTileOnCell = !string.IsNullOrEmpty(cell.Text);
+
+                    // Обновляем только если состояние изменилось
+                    if (isTileOnCell != wasTileOnCell || (isTileOnCell && cell.Text != tile.Letter.ToString()))
                     {
-                        cell.Text = tile.Letter.ToString();
-                        cell.Enabled = false;
-                        cell.BackColor = Color.GhostWhite;
-                    }
-                    else
-                    {
-                        cell.Text = "";
-                        cell.Enabled = true;
-                        cell.BackColor = Color.Transparent;
+                        if (tile != null)
+                        {
+                            cell.Text = tile.Letter.ToString();
+                            cell.Enabled = false;
+                            cell.BackColor = Color.GhostWhite;
+                        }
+                        else
+                        {
+                            cell.Text = "";
+                            cell.Enabled = true;
+                            cell.BackColor = Color.Transparent;
+                        }
                     }
                 }
             }
+
+            // Включаем перерисовку и обновляем интерфейс
+            boardPanel.ResumeLayout(true);
         }
 
-
-        private void InitializePlayerHand() // очищает панель руки, создаёт кнопки для фишек текущего игрока
+        private void InitializePlayerHand()
         {
+            handPanel.SuspendLayout();
             handPanel.Controls.Clear();
+
             var currentPlayer = gameController.GetCurrentPlayer();
+            var buttonsToAdd = new List<Button>();
 
             for (int i = 0; i < currentPlayer.Hand.Count; i++)
             {
                 Button tileButton = CreateTileButton(currentPlayer.Hand[i], i);
-                handPanel.Controls.Add(tileButton);
+                buttonsToAdd.Add(tileButton);
             }
+
+            handPanel.Controls.AddRange(buttonsToAdd.ToArray());
+            handPanel.ResumeLayout(true);
         }
 
         private Button CreateTileButton(Tile tile, int index) // создаёт кнопку для одной фишки (буква, стиль)
