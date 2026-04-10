@@ -86,8 +86,24 @@ namespace erudite
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            _previousForm.Show();
-            this.Close();
+            // Показываем диалоговое окно с подтверждением
+            DialogResult result = MessageBox.Show
+            (
+                "Вы уверены, что хотите отменить выбор персонажей?",
+                "Подтверждение выхода",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                _previousForm.Show();
+                this.Close();
+            }
+            else
+            {
+                return;
+            }
         }
 
         private void btnCoice_Click(object sender, EventArgs e)

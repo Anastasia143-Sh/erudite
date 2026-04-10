@@ -22,7 +22,8 @@ namespace erudite
         private Tile _selectedTile; // Выбранная фишка
         private Button _selectedTileButton; // Кнопка с выбранной фишкой
         private (int row, int col)? _targetCell; // Целевая клетка (если выбрана)
-
+        private Stack<(int row, int col, Tile tile)> _placedTilesDuringTurn = new Stack<(int, int, Tile)>(); // Хранит размещённые фишки текущего хода
+        private bool _isTurnInProgress = false; // Флаг: идёт ли текущий ход
 
         public EruditeForm(InitialForm previousForm, List<Player> players)
         {
@@ -48,10 +49,10 @@ namespace erudite
                 _bagOfTiles = gameController.GetBag();
                 lblCountChips.Text = $"{_bagOfTiles.RemainingCount}";
                 // обновление игроков и счета
-                UpdatePlayerLabels();
+                //UpdatePlayerLabels();
                 UpdateScoreDisplay();
 
-                gameController.NextPlayer();
+                gameController.StartNextTurn();
 
             }
             catch (Exception ex)
@@ -96,9 +97,6 @@ namespace erudite
                     boardPanel.Controls.Add(cell);
                 }
             }
-            boardPanel.BackgroundImage = Properties.Resources.поле;
-            boardPanel.BackgroundImageLayout = ImageLayout.Stretch;
-
         }
 
         private Button CreateBoardCell(int row, int col) // создаёт одну кнопку-клетку с координатами в Tag
@@ -134,6 +132,12 @@ namespace erudite
 
             if (success)
             {
+                // Устанавливаем флаг, что ход начался
+                _isTurnInProgress = true;
+
+                // Записываем размещённую фишку в стек
+                _placedTilesDuringTurn.Push((row, col, _selectedTile));
+
                 // Удаляем фишку из руки игрока
                 var currentPlayer = gameController.GetCurrentPlayer();
                 currentPlayer.Hand.Remove(_selectedTile);
@@ -150,16 +154,13 @@ namespace erudite
                     _selectedTileButton = null;
                 }
                 _targetCell = null;
-
-                // Показываем, что фишка размещена
-                //clickedCell.Text = _selectedTile.Letter.ToString();
-                //clickedCell.Enabled = false; // Блокируем клетку, чтобы нельзя было переставить
             }
             else
             {
                 MessageBox.Show("Не удалось разместить фишку на этой клетке!\nВозможно, клетка занята или ход невалиден.");
             }
         }
+
 
         private void UpdateBoardVisuals()
         {
@@ -172,11 +173,13 @@ namespace erudite
                     {
                         cell.Text = tile.Letter.ToString();
                         cell.Enabled = false;
+                        cell.BackColor = Color.GhostWhite;
                     }
                     else
                     {
                         cell.Text = "";
                         cell.Enabled = true;
+                        cell.BackColor = Color.Transparent;
                     }
                 }
             }
@@ -309,8 +312,24 @@ namespace erudite
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            _previousForm.Show();
-            this.Close();
+            // Показываем диалоговое окно с подтверждением
+            DialogResult result = MessageBox.Show
+            (
+                "Вы уверены, что хотите завершить игру?\nПрогресс будет потерян.",
+                "Подтверждение выхода",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                _previousForm.Show();
+                this.Close();
+            }
+            else
+            {
+                return;
+            }
         }
 
         private void btnComplete_Click(object sender, EventArgs e)
@@ -326,6 +345,37 @@ namespace erudite
         private void btnGiveUp_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnCancell_Click(object sender, EventArgs e)
+        {
+            // Проверяем, есть ли что отменять
+            if (!_isTurnInProgress || _placedTilesDuringTurn.Count == 0)
+            {
+                MessageBox.Show("Нет ходов для отмены.");
+                return;
+            }
+
+            // Берём последнюю размещённую фишку
+            var (row, col, tile) = _placedTilesDuringTurn.Pop();
+
+            // Удаляем фишку с поля
+            gameController.GetBoard().RemoveTile(row, col);
+
+            // Возвращаем фишку в руку текущего игрока
+            var currentPlayer = gameController.GetCurrentPlayer();
+            currentPlayer.Hand.Add(tile);
+
+            // Обновляем интерфейс
+            UpdateBoardVisuals();
+            InitializePlayerHand();
+
+            // Если стек пуст — завершаем ход
+            if (_placedTilesDuringTurn.Count == 0)
+            {
+                _isTurnInProgress = false;
+                MessageBox.Show("Все фишки возвращены в руку. Ход отменён.");
+            }
         }
     }
 }

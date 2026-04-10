@@ -121,7 +121,7 @@ namespace ClassLibrary
             }
         }
 
-        private void StartNextTurn() // уведомляет о начале хода текущего игрока через событие
+        public void StartNextTurn() // уведомляет о начале хода текущего игрока через событие
         {
             var currentPlayer = GetCurrentPlayer();
             OnPlayerTurnStarted?.Invoke(currentPlayer);

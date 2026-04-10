@@ -47,6 +47,7 @@
             lblCountChipsText = new Label();
             pictureBox1 = new PictureBox();
             boardPanel = new Panel();
+            btnCancell = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -66,7 +67,7 @@
             // 
             btnComplete.BackColor = Color.Lavender;
             btnComplete.FlatStyle = FlatStyle.Flat;
-            btnComplete.Location = new Point(678, 371);
+            btnComplete.Location = new Point(677, 262);
             btnComplete.Name = "btnComplete";
             btnComplete.Size = new Size(155, 63);
             btnComplete.TabIndex = 1;
@@ -227,11 +228,24 @@
             // boardPanel
             // 
             boardPanel.BackColor = Color.Transparent;
+            boardPanel.BackgroundImage = Properties.Resources.поле;
             boardPanel.BackgroundImageLayout = ImageLayout.Stretch;
             boardPanel.Location = new Point(40, 262);
             boardPanel.Name = "boardPanel";
             boardPanel.Size = new Size(600, 600);
             boardPanel.TabIndex = 21;
+            // 
+            // btnCancell
+            // 
+            btnCancell.BackColor = Color.Lavender;
+            btnCancell.FlatStyle = FlatStyle.Flat;
+            btnCancell.Location = new Point(678, 370);
+            btnCancell.Name = "btnCancell";
+            btnCancell.Size = new Size(155, 63);
+            btnCancell.TabIndex = 22;
+            btnCancell.Text = "отмена";
+            btnCancell.UseVisualStyleBackColor = false;
+            btnCancell.Click += btnCancell_Click;
             // 
             // EruditeForm
             // 
@@ -240,6 +254,7 @@
             BackgroundImage = Properties.Resources.фон4;
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(854, 1014);
+            Controls.Add(btnCancell);
             Controls.Add(boardPanel);
             Controls.Add(pictureBox1);
             Controls.Add(lblCountChipsText);
@@ -290,5 +305,6 @@
         private Label lblCountChipsText;
         private PictureBox pictureBox1;
         private Panel boardPanel;
+        private Button btnCancell;
     }
 }
