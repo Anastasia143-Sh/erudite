@@ -127,15 +127,19 @@ namespace ClassLibrary
             OnPlayerTurnStarted?.Invoke(currentPlayer);
         }
 
-        public void ResignPlayer(Player player) // обрабатывает сдачу игрока
+        public void ResignPlayer(Player player)
         {
-            player.Resign(); // отмечает как сдавшегося
-            finalScores[player] = player.Score; // сохраняет его финальный счет
+            player.Resign(); // отмечаем как сдавшегося
+            finalScores[player] = player.Score; // сохраняем его финальный счёт
             OnPlayerResigned?.Invoke(player);
 
             if (IsGameOver())
             {
                 EndGame();
+            }
+            else
+            {
+                NextPlayer(); // передаём ход следующему активному игроку
             }
         }
 

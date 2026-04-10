@@ -34,7 +34,7 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = Properties.Resources.фон4;
+            BackColor = Color.Lavender;
             ClientSize = new Size(479, 515);
             Name = "VoteForm";
             Text = "VoteForm";

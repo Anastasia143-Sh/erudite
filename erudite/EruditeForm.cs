@@ -319,9 +319,6 @@ namespace erudite
             }
         }
 
-        // -----------------------------------------------------------------
-        // Реализация кнопок: Зафиксировать, Завершить ход, Отмена, Обмен, Сдаться
-        // -----------------------------------------------------------------
 
         // Фиксация текущего размещённого слова
         private void btnFix_Click(object sender, EventArgs e)
@@ -338,12 +335,7 @@ namespace erudite
             }
 
             var placedList = _placedTilesDuringTurn.ToList();
-            // Проверка, что фишки образуют одно слово (все в одной строке или столбце и подряд)
-            if (!AreTilesFormingSingleWord(placedList))
-            {
-                MessageBox.Show("Размещённые фишки не образуют одно непрерывное слово. Отмените лишние фишки.");
-                return;
-            }
+            
 
             // Валидация хода через GameBoard
             var moveTiles = placedList.Select(p => (p.row, p.col, p.tile)).ToList();

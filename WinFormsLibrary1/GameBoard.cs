@@ -20,7 +20,58 @@ namespace ClassLibrary
             InitializePremiumCells();
         }
 
-        private void InitializePremiumCells() { /* без изменений */ }
+        private void InitializePremiumCells() // задает расположение премиальных клеток
+        {
+            // Центр — тройное слово
+            IsTripleWord[7, 7] = true;
+
+            // Двойные буквы (пример расположения)
+            var doubleLetterPositions = new List<(int, int)>
+            {
+                (0, 3), (0, 11), (2, 6), (2, 8),
+                (3, 0), (3, 7), (3, 13), (6, 2),
+                (6, 6), (6, 8), (6, 12), (7, 3),
+                (7, 11), (8, 2), (8, 6), (8, 8),
+                (8, 12), (11, 0), (11, 7), (11, 13),
+                (12, 6), (12, 8), (14, 3), (14, 11)
+            };
+
+            foreach (var (row, col) in doubleLetterPositions)
+                IsDoubleLetter[row, col] = true;
+
+            // Тройные буквы
+            var tripleLetterPositions = new List<(int, int)>
+            {
+                (1, 5), (1, 9), (5, 1), (9, 1),
+                (13, 5), (5, 13), (13, 9), (9, 13)
+            };
+
+            foreach (var (row, col) in tripleLetterPositions)
+                IsTripleLetter[row, col] = true;
+
+            // Двойные слова
+            var doubleWordPositions = new List<(int, int)>
+            {
+                (1, 1), (2, 2), (3, 3), (4, 4),
+                (13, 1), (12, 2), (11, 3), (10, 4),
+                (1, 13), (2, 12), (3, 11), (4, 10),
+                (13, 13), (12, 12), (11, 11), (10, 10)
+            };
+
+            foreach (var (row, col) in doubleWordPositions)
+                IsDoubleWord[row, col] = true;
+
+            // Тройные слова
+            var tripleWordPositions = new List<(int, int)>
+            {
+                (0, 0), (0, 14), (14, 0), (14, 14),
+                (0, 7), (7, 0), (14, 7), (7, 14)
+            };
+
+            foreach (var (row, col) in tripleWordPositions)
+                IsTripleWord[row, col] = true;
+        }
+
 
         public bool PlaceTile(Tile tile, int row, int col)
         {
@@ -122,7 +173,7 @@ namespace ClassLibrary
 
         // Подсчёт очков по готовым позициям (без повторного обхода поля)
         private int CalculateWordScoreWithPositions(string word, List<(int row, int col)> positions,
-                                                    HashSet<(int, int)> newTilePositions, ref bool wordMultiplierApplied)
+                                            HashSet<(int, int)> newTilePositions, ref bool wordMultiplierApplied)
         {
             int baseScore = 0;
             int wordMultiplier = 1;
@@ -131,34 +182,26 @@ namespace ClassLibrary
             {
                 var (row, col) = positions[i];
                 var tile = grid[row, col];
-                if (tile == null)
-                    throw new InvalidOperationException($"Нет фишки в клетке ({row},{col}) при подсчёте очков для слова {word}");
-
                 int letterScore = tile.Weight;
 
-                // Множители букв – только для новых клеток
-                if (newTilePositions.Contains((row, col)))
+                bool isNew = newTilePositions.Contains((row, col));
+
+                if (isNew)
                 {
-                    if (IsDoubleLetter[row, col])
-                        letterScore *= 2;
-                    else if (IsTripleLetter[row, col])
-                        letterScore *= 3;
+                    if (IsDoubleLetter[row, col]) letterScore *= 2;
+                    else if (IsTripleLetter[row, col]) letterScore *= 3;
                 }
 
                 baseScore += letterScore;
 
-                // Множители слов – только для новых клеток и только один раз за ход
-                if (!wordMultiplierApplied && newTilePositions.Contains((row, col)))
+                if (!wordMultiplierApplied && isNew)
                 {
-                    if (IsDoubleWord[row, col])
-                        wordMultiplier *= 2;
-                    else if (IsTripleWord[row, col])
-                        wordMultiplier *= 3;
+                    if (IsDoubleWord[row, col]) wordMultiplier *= 2;
+                    else if (IsTripleWord[row, col]) wordMultiplier *= 3;
                 }
             }
 
-            if (wordMultiplier > 1)
-                wordMultiplierApplied = true;
+            if (wordMultiplier > 1) wordMultiplierApplied = true;
 
             return baseScore * wordMultiplier;
         }
@@ -169,29 +212,109 @@ namespace ClassLibrary
             return GetWordAndPositions(startRow, startCol, rowStep, colStep).word;
         }
 
+        // Проверяет, что все новые фишки соединены друг с другом (через соседство) 
+        // и хотя бы одна из них касается существующей фишки.
+        private bool AreAllNewTilesConnectedToBoard(List<(int row, int col, Tile tile)> placedTiles, HashSet<(int, int)> newTilePositions)
+        {
+            // Находим все позиции существующих фишек (не новых)
+            var existingPositions = new HashSet<(int, int)>();
+            for (int r = 0; r < Size; r++)
+                for (int c = 0; c < Size; c++)
+                    if (grid[r, c] != null && !newTilePositions.Contains((r, c)))
+                        existingPositions.Add((r, c));
+
+            // Если нет существующих фишек, то это первый ход (проверка центра делается отдельно)
+            if (existingPositions.Count == 0)
+                return false; // первый ход обрабатывается в IsValidMove отдельно
+
+            // BFS по всем новым фишкам и существующим, чтобы проверить связность
+            var allPositions = new HashSet<(int, int)>(existingPositions);
+            allPositions.UnionWith(newTilePositions);
+
+            var visited = new HashSet<(int, int)>();
+            var queue = new Queue<(int, int)>();
+
+            // Начинаем обход с первой новой фишки (если есть)
+            if (newTilePositions.Count > 0)
+            {
+                var start = newTilePositions.First();
+                visited.Add(start);
+                queue.Enqueue(start);
+            }
+            else return false;
+
+            while (queue.Count > 0)
+            {
+                var (r, c) = queue.Dequeue();
+                foreach (var (nr, nc) in GetNeighbors(r, c))
+                {
+                    if (allPositions.Contains((nr, nc)) && !visited.Contains((nr, nc)))
+                    {
+                        visited.Add((nr, nc));
+                        queue.Enqueue((nr, nc));
+                    }
+                }
+            }
+
+            // Все ли новые фишки посещены?
+            bool allNewVisited = newTilePositions.All(pos => visited.Contains(pos));
+
+            // Хотя бы одна новая фишка касается существующей?
+            bool touchesExisting = newTilePositions.Any(pos =>
+                GetNeighbors(pos.Item1, pos.Item2).Any(n => existingPositions.Contains(n)));
+
+
+            return allNewVisited && touchesExisting;
+        }
+
+        // Возвращает соседние клетки (по горизонтали/вертикали) без проверки границ
+        private IEnumerable<(int, int)> GetNeighbors(int row, int col)
+        {
+            int[] dr = { -1, 1, 0, 0 };
+            int[] dc = { 0, 0, -1, 1 };
+            for (int i = 0; i < 4; i++)
+            {
+                int nr = row + dr[i];
+                int nc = col + dc[i];
+                if (nr >= 0 && nr < Size && nc >= 0 && nc < Size)
+                    yield return (nr, nc);
+            }
+        }
+
+        // Количество существующих фишек (не учитывая новые)
+        private int GetExistingTilesCount(HashSet<(int, int)> newTilePositions)
+        {
+            int count = 0;
+            for (int r = 0; r < Size; r++)
+                for (int c = 0; c < Size; c++)
+                    if (grid[r, c] != null && !newTilePositions.Contains((r, c)))
+                        count++;
+            return count;
+        }
+
+        // Исправленный метод IsValidMove
         public bool IsValidMove(List<(int row, int col, Tile tile)> placedTiles)
         {
             if (placedTiles.Count == 0) return false;
 
-            // Первое размещение должно включать центральную клетку
-            if (GetAllTilesCount() == 0) // первый ход
+            var newTilePositions = placedTiles.Select(t => (t.row, t.col)).ToHashSet();
+            int existingCount = GetExistingTilesCount(newTilePositions);
+
+            // Первый ход (на поле нет старых фишек)
+            if (existingCount == 0)
             {
                 bool passesThroughCenter = placedTiles.Any(t => t.row == 7 && t.col == 7);
                 if (!passesThroughCenter)
-                {
-                    return false; // первое слово должно проходить через (7,7)
-                }
+                    return false;
             }
-            else // не первый ход
+            else
             {
-                // Все фишки должны быть смежными
-                if (!AreTilesConnected(placedTiles)) return false;
-
-                // Фишки должны соединяться с существующими на поле
-                if (!ConnectsToExistingTiles(placedTiles)) return false;
+                // Не первый ход: проверяем связность новых фишек между собой и касание старых
+                if (!AreAllNewTilesConnectedToBoard(placedTiles, newTilePositions))
+                    return false;
             }
 
-            // Слова должны быть валидными (проверка через словарь)
+            // Проверка слов через словарь (длина >= 2)
             var (words, _) = CalculateTurnScore(placedTiles);
             return AreWordsValid(words);
         }
