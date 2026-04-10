@@ -19,8 +19,20 @@ namespace erudite
             {
                 string playerCountInput = Microsoft.VisualBasic.Interaction.InputBox(
                     "Введите количество игроков (2-4):", "Настройка игры", "2");
+                if (string.IsNullOrEmpty(playerCountInput))
+                {
+                    DialogResult result = MessageBox.Show(
+                        $"Вы хотите отменить создание игры?",
+                        "Отмена ввода",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
 
-                if (!int.TryParse(playerCountInput, out playerCount) || playerCount < 2 || playerCount > 4 || string.IsNullOrEmpty(playerCountInput))
+                    if (result == DialogResult.Yes)
+                    {
+                        return;
+                    }
+                }
+                if (!int.TryParse(playerCountInput, out playerCount) || playerCount < 2 || playerCount > 4)
                 {
                     MessageBox.Show("Введите корректное число игроков (от 2 до 4)", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);

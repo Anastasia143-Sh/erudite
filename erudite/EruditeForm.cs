@@ -148,7 +148,7 @@ namespace erudite
         {
             if (!_canPlace)
             {
-                MessageBox.Show("Слово уже зафиксировано. Завершите ход или сбросьте (кнопка Отмена)");
+                MessageBox.Show("Слово уже зафиксировано. Завершите ход");
                 return;
             }
 
@@ -365,31 +365,10 @@ namespace erudite
             _placedTilesDuringTurn.Clear();
 
             _isFix = true;
-            _canPlace = false;   // после фиксации больше нельзя добавлять фишки
+            //_canPlace = false;   // после фиксации больше нельзя добавлять фишки
 
             UpdateBoardVisuals(); // клетки станут LightGreen
             MessageBox.Show($"Слово зафиксировано! Начислено {totalScore} очков (будут учтены после голосования).");
-        }
-
-        // Вспомогательный метод: проверяет, что все фишки находятся в одной линии и идут подряд
-        private bool AreTilesFormingSingleWord(List<(int row, int col, Tile tile)> tiles)
-        {
-            if (tiles.Count == 0) return false;
-            bool sameRow = tiles.All(t => t.row == tiles[0].row);
-            bool sameCol = tiles.All(t => t.col == tiles[0].col);
-            if (!(sameRow || sameCol)) return false;
-
-            var sorted = sameRow
-                ? tiles.OrderBy(t => t.col).ToList()
-                : tiles.OrderBy(t => t.row).ToList();
-
-            for (int i = 1; i < sorted.Count; i++)
-            {
-                int prev = sameRow ? sorted[i - 1].col : sorted[i - 1].row;
-                int curr = sameRow ? sorted[i].col : sorted[i].row;
-                if (curr != prev + 1) return false;
-            }
-            return true;
         }
 
         // Завершение хода
