@@ -10,7 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "erudite", "erudite\erudite.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "WinFormsLibrary1\ClassLibrary.csproj", "{054974A0-7E28-4FC6-96C6-8B03DE628F11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{09808658-EC45-4CEE-8C75-0F793CB87A06}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{300C7984-6C71-474A-B5CB-DFB3FF0752F6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{054974A0-7E28-4FC6-96C6-8B03DE628F11} = {054974A0-7E28-4FC6-96C6-8B03DE628F11}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +29,10 @@ Global
 		{054974A0-7E28-4FC6-96C6-8B03DE628F11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{054974A0-7E28-4FC6-96C6-8B03DE628F11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{054974A0-7E28-4FC6-96C6-8B03DE628F11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09808658-EC45-4CEE-8C75-0F793CB87A06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09808658-EC45-4CEE-8C75-0F793CB87A06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09808658-EC45-4CEE-8C75-0F793CB87A06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09808658-EC45-4CEE-8C75-0F793CB87A06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{300C7984-6C71-474A-B5CB-DFB3FF0752F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{300C7984-6C71-474A-B5CB-DFB3FF0752F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{300C7984-6C71-474A-B5CB-DFB3FF0752F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{300C7984-6C71-474A-B5CB-DFB3FF0752F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

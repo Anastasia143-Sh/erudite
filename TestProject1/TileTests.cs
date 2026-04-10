@@ -1,11 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using ClassLibrary;
+﻿using ClassLibrary;
 
-namespace UnitTests
+namespace TestProject1
 {
     [TestClass]
-    public class TileTests
+    public sealed class TileTests
     {
         [TestMethod]
         public void Constructor_ShouldSetLetterAndWeight()
