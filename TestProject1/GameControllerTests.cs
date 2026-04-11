@@ -7,7 +7,8 @@ using ClassLibrary;
 
 namespace TestProject1
 {
-    internal class GameControllerTests
+    [TestClass]
+    public sealed class GameControllerTests
     {
         [TestMethod]
         public void Constructor_ShouldInitializePlayersWith7TilesEachAndStartFirstTurn()
@@ -103,19 +104,27 @@ namespace TestProject1
                 new Player("P2", 1)
             };
             var controller = new GameController(players);
-            var current = controller.GetCurrentPlayer();
-            var handBefore = current.Hand.ToList();
-            var toExchange = handBefore.Take(3).ToList();
-            controller.ExchangeTiles(current, toExchange);
-            // Рука должна иметь те же 7 фишек (3 заменены на новые)
-            Assert.AreEqual(7, current.Hand.Count);
-            // Ход должен перейти к следующему игроку
-            Assert.AreEqual(players[1], controller.GetCurrentPlayer());
-            // Старые фишки не должны быть в руке
-            foreach (var tile in toExchange)
+            var currentPlayer = controller.GetCurrentPlayer();
+            Assert.AreEqual(7, currentPlayer.Hand.Count, "Игрок должен иметь 7 фишек перед обменом");
+            var tilesToExchange = currentPlayer.Hand.Take(3).ToList();
+            var originalHand = currentPlayer.Hand.ToList(); 
+            controller.ExchangeTiles(currentPlayer, tilesToExchange);
+
+            Assert.AreEqual(7, currentPlayer.Hand.Count, "После обмена в руке должно остаться 7 фишек");
+
+            foreach (var tile in tilesToExchange)
             {
-                Assert.IsFalse(current.Hand.Contains(tile));
+                Assert.IsFalse(currentPlayer.Hand.Contains(tile),
+                    $"Фишка '{tile.Letter}' не должна быть в руке после обмена");
             }
+
+            bool handChanged = !originalHand.SequenceEqual(currentPlayer.Hand);
+            Assert.IsTrue(handChanged, "Состав руки должен измениться после обмена");
+
+            var nextPlayer = players[1];
+            Assert.AreEqual(nextPlayer.Name, controller.GetCurrentPlayer().Name,
+                "Текущий игрок должен быть следующим после обмена");
+
         }
 
         [TestMethod]

@@ -7,7 +7,8 @@ using ClassLibrary;
 
 namespace TestProject1
 {
-    internal class PlayerTests
+    [TestClass]
+    public sealed class PlayerTests
     {
         [TestMethod]
         public void Constructor_ShouldInitializeProperties()

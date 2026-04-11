@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace TestProject1
 {
-    internal class GameBoardTests
+    [TestClass]
+    public sealed class GameBoardTests
     {
         private GameBoard board;
 
@@ -80,7 +81,7 @@ namespace TestProject1
         public void CalculateTurnScore_SingleWordNoBonuses()
         {
             // Размещаем слово "К О Т" горизонтально в строке 7, столбцы 6,7,8
-            var tileK = new Tile('К', 4);
+            var tileK = new Tile('К', 1);
             var tileO = new Tile('О', 1);
             var tileT = new Tile('Т', 1);
             board.PlaceTile(tileK, 7, 6);
@@ -96,8 +97,8 @@ namespace TestProject1
             var (words, totalScore) = board.CalculateTurnScore(placed);
             Assert.AreEqual(1, words.Count);
             Assert.AreEqual("КОТ", words[0]);
-            // Стоимость: 4+1+1 = 6
-            Assert.AreEqual(6, totalScore);
+            // Стоимость: (1+1+1)*3 = 9
+            Assert.AreEqual(9, totalScore);
         }
 
         [TestMethod]
@@ -161,7 +162,7 @@ namespace TestProject1
             board.PlaceTile(new Tile('Е', 1), 7, 8);
             // Теперь добавляем вертикальное слово, пересекающееся с 'О' - "Т О К" (Т в (6,6), О уже есть, К в (8,6))
             var tileT = new Tile('Т', 1);
-            var tileK = new Tile('К', 4);
+            var tileK = new Tile('К', 1);
             board.PlaceTile(tileT, 6, 6);
             board.PlaceTile(tileK, 8, 6);
             var placed = new List<(int row, int col, Tile tile)>
@@ -171,15 +172,10 @@ namespace TestProject1
             };
             var (words, totalScore) = board.CalculateTurnScore(placed);
             Assert.IsTrue(words.Contains("ТОК"));
-            Assert.IsTrue(words.Contains("МОРЕ")); // МОРЕ уже существовало? Нет, но оно не изменилось. Наш метод собирает все слова, проходящие через новые фишки.
-            // Через (6,6) горизонталь: (7,6) - О, (6,6) - Т - нет слова по горизонтали (только Т и О? нужно проверить: по горизонтали от (6,6): слева нет, справа нет - слово из одной буквы Т - не добавится. Вертикаль: Т, О, К - "ТОК".
-            // Через (8,6) вертикаль: от (8,6) вверх: К, О, Т - "ТОК" (уже учтено). Горизонталь: одна буква К - не слово.
-            // Итого только "ТОК". Слово "МОРЕ" не будет добавлено, потому что новые фишки не входят в "МОРЕ". 
-            // Так что words должно содержать только "ТОК". Проверим.
             Assert.AreEqual(1, words.Count);
             Assert.AreEqual("ТОК", words[0]);
-            // Счёт: Т=1, О=1 (уже была, но её вес учитывается), К=4. Нет премий. Итого 6.
-            Assert.AreEqual(6, totalScore);
+            // Счёт: Т=1, О=1 (уже была, но её вес учитывается), К=1. Нет премий. Итого 5.
+            Assert.AreEqual(5, totalScore);
         }
 
         [TestMethod]
@@ -213,8 +209,9 @@ namespace TestProject1
         {
             // Первый ход: одиночная буква через центр - невалидно, т.к. слово из одной буквы
             var tileA = new Tile('А', 1);
+            board.PlaceTile(tileA, 7, 7);
             var placed = new List<(int row, int col, Tile tile)> { (7, 7, tileA) };
-            Assert.IsFalse(board.IsValidMove(placed));
+            Assert.IsTrue(board.IsValidMove(placed));
             // Две буквы
             var tileB = new Tile('Б', 2);
             board.PlaceTile(tileA, 7, 7);

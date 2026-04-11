@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace TestProject1
 {
-    internal class BagOfTilesTests
+    [TestClass]
+    public sealed class BagOfTilesTests
     {
         private int GetTotalTileCount()
         {
