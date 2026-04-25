@@ -429,7 +429,7 @@ namespace erudite
         /// </summary>
         private void btnComplete_Click(object sender, EventArgs e)
         {
-            if (!_isFix)
+            if (!_isFix && _placedTilesDuringTurn.Count == 0)
             {
                 DialogResult res = MessageBox.Show("Вы не вставили ни одного слова. Передать ход следующему?",
                     "Завершение хода", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -440,7 +440,11 @@ namespace erudite
                 }
                 return;
             }
-
+            else if (_placedTilesDuringTurn.Count != 0)
+            {
+                MessageBox.Show("Сначала зафиксируйте слово.");
+                return;
+            }
             // Есть зафиксированное слово – запускаем голосование
             StartVoting();
         }

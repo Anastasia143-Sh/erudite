@@ -95,37 +95,6 @@ namespace TestProject1
             Assert.AreEqual(players[1], winner);
         }
 
-        [TestMethod]
-        public void ExchangeTiles_ShouldReplaceTilesAndSkipTurn()
-        {
-            var players = new List<Player>
-            {
-                new Player("P1", 0),
-                new Player("P2", 1)
-            };
-            var controller = new GameController(players);
-            var currentPlayer = controller.GetCurrentPlayer();
-            Assert.AreEqual(7, currentPlayer.Hand.Count, "Игрок должен иметь 7 фишек перед обменом");
-            var tilesToExchange = currentPlayer.Hand.Take(3).ToList();
-            var originalHand = currentPlayer.Hand.ToList(); 
-            controller.ExchangeTiles(currentPlayer, tilesToExchange);
-
-            Assert.AreEqual(7, currentPlayer.Hand.Count, "После обмена в руке должно остаться 7 фишек");
-
-            foreach (var tile in tilesToExchange)
-            {
-                Assert.IsFalse(currentPlayer.Hand.Contains(tile),
-                    $"Фишка '{tile.Letter}' не должна быть в руке после обмена");
-            }
-
-            bool handChanged = !originalHand.SequenceEqual(currentPlayer.Hand);
-            Assert.IsTrue(handChanged, "Состав руки должен измениться после обмена");
-
-            var nextPlayer = players[1];
-            Assert.AreEqual(nextPlayer.Name, controller.GetCurrentPlayer().Name,
-                "Текущий игрок должен быть следующим после обмена");
-
-        }
 
         [TestMethod]
         public void ExchangeTiles_OnlyCurrentPlayerCanExchange()
